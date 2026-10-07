@@ -116,10 +116,6 @@ export const translations = {
   },
   footer: {
     rights: { es: "Todos los derechos reservados.", en: "All rights reserved." },
-    credits: {
-      es: "NexusWeb Technologies · Cátedra de Tecnología Web · Universidad",
-      en: "NexusWeb Technologies · Web Technology Course · University",
-    },
   },
 };
 
