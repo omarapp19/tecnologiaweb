@@ -156,15 +156,6 @@ export default function Team() {
             );
           })}
         </div>
-
-        {/* Collaborative Note */}
-        <div className="mt-10 p-5 rounded-xl border border-zinc-850 bg-zinc-950/40 text-center max-w-2xl mx-auto">
-          <p className="text-xs text-zinc-500 font-mono">
-            {language === "es"
-              ? "⚡ Equipo de Proyecto · Universidad · Asignatura: Tecnología Web"
-              : "⚡ Project Team · University · Course: Web Technology"}
-          </p>
-        </div>
       </div>
     </section>
   );
