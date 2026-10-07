@@ -1,0 +1,311 @@
+@import "tailwindcss";
+
+:root {
+  --background: #000000; /* pure black */
+  --foreground: #f4f4f5; /* zinc-100 */
+  
+  /* Dynamic zinc scale mapped for dark mode */
+  --zinc-100: #f4f4f5;
+  --zinc-200: #e4e4e7;
+  --zinc-300: #d4d4d8;
+  --zinc-400: #a1a1aa;
+  --zinc-450: #92929c;
+  --zinc-455: #8c8c96;
+  --zinc-500: #71717a;
+  --zinc-550: #5a5a62;
+  --zinc-750: #3f3f46;
+  --zinc-800: #27272a;
+  --zinc-900: #18181b;
+  --zinc-950: #09090b;
+  --white-color: #ffffff;
+  --black-color: #000000;
+  --white-rgb: 255, 255, 255;
+  
+  --card-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0.02) 60%, rgba(255, 255, 255, 0.005) 100%), rgba(18, 18, 22, 0.55);
+  --card-bg-hover: linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.04) 60%, rgba(255, 255, 255, 0.015) 100%), rgba(24, 24, 30, 0.65);
+  --card-border: rgba(255, 255, 255, 0.12);
+  --card-border-hover: rgba(255, 255, 255, 0.24);
+  --card-shadow-inner: rgba(255, 255, 255, 0.18);
+  --card-shadow-inner-hover: rgba(255, 255, 255, 0.28);
+  --card-shadow-outer: rgba(0, 0, 0, 0.4);
+  --card-shadow-outer-hover: rgba(0, 0, 0, 0.6);
+  
+  --accent: #3b82f6; /* blue-500 */
+  --accent-hover: #60a5fa; /* blue-400 */
+  
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+:root.light {
+  --background: #fafafa; /* light zinc background */
+  --foreground: #09090b; /* dark zinc body text */
+  
+  /* Reverse scale mapped for light mode */
+  --zinc-100: #09090b; /* maps light elements to dark */
+  --zinc-200: #18181b;
+  --zinc-300: #27272a;
+  --zinc-400: #52525b;
+  --zinc-450: #71717a;
+  --zinc-455: #7e7e87;
+  --zinc-500: #a1a1aa;
+  --zinc-550: #babcbf;
+  --zinc-750: #e4e4e7;
+  --zinc-800: #e4e4e7;
+  --zinc-900: #f4f4f5;
+  --zinc-950: #ffffff;
+  --white-color: #09090b;
+  --black-color: #ffffff;
+  --white-rgb: 9, 9, 11;
+  
+  --card-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0.5) 100%), rgba(255, 255, 255, 0.6);
+  --card-bg-hover: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.65) 100%), rgba(255, 255, 255, 0.75);
+  --card-border: rgba(255, 255, 255, 0.9);
+  --card-border-hover: rgba(255, 255, 255, 1);
+  --card-shadow-inner: rgba(255, 255, 255, 1);
+  --card-shadow-inner-hover: rgba(255, 255, 255, 1);
+  --card-shadow-outer: rgba(31, 38, 135, 0.08);
+  --card-shadow-outer-hover: rgba(31, 38, 135, 0.15);
+  
+  --accent: #2563eb; /* blue-600 */
+  --accent-hover: #1d4ed8; /* blue-700 */
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card-bg: var(--card-bg);
+  --color-card-border: var(--card-border);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --font-sans: var(--font-geist-sans), sans-serif;
+  --font-mono: var(--font-geist-mono), monospace;
+  
+  /* Tailwind override bindings */
+  --color-zinc-100: var(--zinc-100);
+  --color-zinc-200: var(--zinc-200);
+  --color-zinc-300: var(--zinc-300);
+  --color-zinc-400: var(--zinc-400);
+  --color-zinc-450: var(--zinc-450);
+  --color-zinc-455: var(--zinc-455);
+  --color-zinc-500: var(--zinc-500);
+  --color-zinc-550: var(--zinc-550);
+  --color-zinc-750: var(--zinc-750);
+  --color-zinc-800: var(--zinc-800);
+  --color-zinc-900: var(--zinc-900);
+  --color-zinc-950: var(--zinc-950);
+  --color-white: var(--white-color);
+  --color-black: var(--black-color);
+}
+
+html {
+  scroll-behavior: smooth;
+  background-color: var(--background);
+  color: var(--foreground);
+  transition: background-color 500ms cubic-bezier(0.16, 1, 0.3, 1), color 500ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--background);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--zinc-800);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--zinc-750);
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  transition: background-color 500ms cubic-bezier(0.16, 1, 0.3, 1), color 500ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Cursor blink keyframes for terminal cursor effects in Pong */
+@keyframes cursor-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.animate-blink {
+  animation: cursor-blink 1s step-end infinite;
+}
+
+.tap-feedback {
+  transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.tap-feedback:active {
+  transform: scale(0.97);
+}
+
+/* Glassmorphism Premium Card styles */
+.glass-card {
+  background: var(--card-bg);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid var(--card-border);
+  box-shadow: inset 0 1px 1px 0 var(--card-shadow-inner), 0 10px 30px -10px var(--card-shadow-outer);
+  transition: background-color 300ms var(--ease-out-expo), border-color 300ms var(--ease-out-expo), box-shadow 300ms var(--ease-out-expo), transform 300ms var(--ease-out-expo);
+}
+
+.glass-card:hover {
+  background: var(--card-bg-hover);
+  border-color: var(--card-border-hover);
+  box-shadow: inset 0 1px 2px 0 var(--card-shadow-inner-hover), 0 20px 45px -12px var(--card-shadow-outer-hover), 0 0 25px rgba(59, 130, 246, 0.12);
+}
+
+/* ==========================================================================
+   NEOMORPHISM DESIGN SYSTEM (Dark & Light)
+   ========================================================================== */
+
+/* Dark Mode Neomorphism */
+body.neo-mode {
+  --background: #141519;
+  --foreground: #f1f5f9;
+  --card-bg: #141519;
+  --neo-shadow-light: rgba(255, 255, 255, 0.04);
+  --neo-shadow-dark: rgba(0, 0, 0, 0.85);
+
+  --zinc-100: #f8fafc;
+  --zinc-200: #e2e8f0;
+  --zinc-300: #cbd5e1;
+  --zinc-400: #94a3b8;
+  --zinc-450: #8291a5;
+  --zinc-455: #718096;
+  --zinc-500: #64748b;
+  --zinc-550: #475569;
+  --zinc-750: #1e2129;
+  --zinc-800: #1a1c23;
+  --zinc-900: #141519;
+  --zinc-950: #141519;
+  --white-color: #f8fafc;
+  --black-color: #000000;
+}
+
+/* Light Mode Neomorphism */
+:root.light body.neo-mode,
+html.light body.neo-mode {
+  --background: #e6ecf2;
+  --foreground: #0f172a;
+  --card-bg: #e6ecf2;
+  --neo-shadow-light: rgba(255, 255, 255, 0.95);
+  --neo-shadow-dark: rgba(166, 180, 200, 0.7);
+
+  --zinc-100: #0f172a;
+  --zinc-200: #1e293b;
+  --zinc-300: #334155;
+  --zinc-400: #475569;
+  --zinc-450: #64748b;
+  --zinc-455: #64748b;
+  --zinc-500: #64748b;
+  --zinc-550: #94a3b8;
+  --zinc-750: #cbd5e1;
+  --zinc-800: #cbd5e1;
+  --zinc-900: #d9e2ec;
+  --zinc-950: #e6ecf2;
+  --white-color: #0f172a;
+  --black-color: #ffffff;
+}
+
+/* Neomorphic Cards - Extruded Seamless Surface */
+body.neo-mode .glass-card, 
+body.neo-mode .neo-card {
+  background: var(--card-bg) !important;
+  border: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: 
+    8px 8px 18px var(--neo-shadow-dark), 
+    -8px -8px 18px var(--neo-shadow-light) !important;
+  border-radius: 1.5rem !important;
+  transition: box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+body.neo-mode .glass-card:hover,
+body.neo-mode .neo-card:hover {
+  box-shadow: 
+    12px 12px 28px var(--neo-shadow-dark), 
+    -10px -10px 24px var(--neo-shadow-light) !important;
+  transform: translateY(-2px) !important;
+}
+
+/* Neomorphic Navbar */
+body.neo-mode nav.fixed {
+  background: var(--background) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: none !important;
+  box-shadow: 
+    0 6px 20px var(--neo-shadow-dark) !important;
+}
+
+/* Neomorphic Interactive Elements & Buttons */
+body.neo-mode a.tap-feedback,
+body.neo-mode button.p-3,
+body.neo-mode .neo-btn {
+  background: var(--card-bg) !important;
+  border: none !important;
+  box-shadow: 
+    5px 5px 12px var(--neo-shadow-dark), 
+    -5px -5px 12px var(--neo-shadow-light) !important;
+  color: var(--foreground) !important;
+  transition: box-shadow 0.2s ease, transform 0.2s ease !important;
+}
+
+body.neo-mode a.tap-feedback:hover,
+body.neo-mode button.p-3:hover,
+body.neo-mode .neo-btn:hover {
+  box-shadow: 
+    7px 7px 16px var(--neo-shadow-dark), 
+    -7px -7px 16px var(--neo-shadow-light) !important;
+}
+
+body.neo-mode a.tap-feedback:active,
+body.neo-mode button.p-3:active,
+body.neo-mode .neo-btn:active {
+  box-shadow: 
+    inset 4px 4px 8px var(--neo-shadow-dark), 
+    inset -4px -4px 8px var(--neo-shadow-light) !important;
+  transform: none !important;
+}
+
+/* Neomorphic Form Inputs - Recessed Surface */
+body.neo-mode input,
+body.neo-mode textarea {
+  background: var(--card-bg) !important;
+  border: none !important;
+  border-radius: 0.75rem !important;
+  padding: 0.75rem 1rem !important;
+  box-shadow: 
+    inset 3px 3px 6px var(--neo-shadow-dark), 
+    inset -3px -3px 6px var(--neo-shadow-light) !important;
+  color: var(--foreground) !important;
+}
+
+body.neo-mode input:focus,
+body.neo-mode textarea:focus {
+  box-shadow: 
+    inset 4px 4px 8px var(--neo-shadow-dark), 
+    inset -4px -4px 8px var(--neo-shadow-light) !important;
+}
+
+/* Inner Recessed Chips (TechStack, Education, Badges) */
+body.neo-mode .tech-item,
+body.neo-mode div[class*="bg-zinc-950/20"] {
+  background: var(--card-bg) !important;
+  border: none !important;
+  box-shadow: 
+    inset 2px 2px 5px var(--neo-shadow-dark), 
+    inset -2px -2px 5px var(--neo-shadow-light) !important;
+}
+
+/* Hide Colored Ambient Blur Glows in Neo Mode for Clean Surface */
+body.neo-mode #background-nebulae,
+body.neo-mode [class*="bg-blue-500/"] {
+  display: none !important;
+}
