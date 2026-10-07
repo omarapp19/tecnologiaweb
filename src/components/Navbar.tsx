@@ -27,6 +27,7 @@ export default function Navbar() {
   const navItems = [
     { name: t.navbar.inicio[language], href: "#inicio" },
     { name: t.navbar.servicios[language], href: "#servicios" },
+    { name: t.navbar.cotizador[language], href: "#cotizador" },
     { name: t.navbar.proyectos[language], href: "#proyectos" },
     { name: t.navbar.techStack[language], href: "#tech-stack" },
     { name: t.navbar.equipo[language], href: "#equipo" },

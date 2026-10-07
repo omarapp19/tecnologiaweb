@@ -16,6 +16,7 @@ export const translations = {
   navbar: {
     inicio: { es: "Inicio", en: "Home" },
     servicios: { es: "Servicios", en: "Services" },
+    cotizador: { es: "Cotizador", en: "Estimator" },
     proyectos: { es: "Proyectos", en: "Projects" },
     techStack: { es: "Tech Stack", en: "Tech Stack" },
     equipo: { es: "Equipo", en: "Team" },

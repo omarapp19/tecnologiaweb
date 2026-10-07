@@ -1,6 +1,7 @@
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import Services from "@/components/Services";
+import ProjectEstimator from "@/components/ProjectEstimator";
 import Projects from "@/components/Projects";
 import TechStack from "@/components/TechStack";
 import Team from "@/components/Team";
@@ -24,6 +25,9 @@ export default function Home() {
 
         {/* Corporate Services & Solutions */}
         <Services />
+
+        {/* Interactive Solution Builder & Live Estimator (DOM, Animations, Dynamic Nodes & JSON) */}
+        <ProjectEstimator />
 
         {/* Selected Works Bento Showcase */}
         <Projects />

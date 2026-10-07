@@ -1,4 +1,4 @@
-﻿# NexusWeb Technologies ⚡
+# NexusWeb Technologies ⚡
 
 > **Estudio de Ingeniería de Software & Soluciones Web**  
 > Proyecto desarrollado para la cátedra de **Tecnología Web**.
