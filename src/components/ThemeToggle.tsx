@@ -2,11 +2,13 @@
 
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Sun, Moon, Sparkle, Cube, CaretRight, CaretLeft, ShieldCheck } from "@phosphor-icons/react";
 import { motion } from "motion/react";
 import { useDesign } from "@/context/DesignContext";
 
 export default function ThemeToggle() {
+  const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
   const [theme, setTheme] = useState<"dark" | "light">("dark");
   const [isOpen, setIsOpen] = useState(false);
@@ -62,7 +64,8 @@ export default function ThemeToggle() {
     }
   };
 
-  if (!mounted) return null;
+  // Render only on the home page ('/')
+  if (!mounted || pathname !== "/") return null;
 
   const isNeo = designMode === "neo";
   const isLight = theme === "light";
