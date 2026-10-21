@@ -2,8 +2,14 @@ import { NextResponse } from "next/server";
 import nodemailer from "nodemailer";
 import { saveContact, getContacts, deleteContact } from "@/lib/db";
 import { evaluateLead } from "@/lib/leadScorer";
+import { verifyAdminAuth } from "@/lib/adminAuth";
 
 export async function GET() {
+  const isAuth = await verifyAdminAuth();
+  if (!isAuth) {
+    return NextResponse.json({ error: "No autorizado. Esta información solo es accesible en el panel /admin." }, { status: 401 });
+  }
+
   try {
     const contacts = await getContacts(50);
     return NextResponse.json({ success: true, data: contacts });

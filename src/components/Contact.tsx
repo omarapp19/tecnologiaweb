@@ -1,29 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "motion/react";
+import { useState } from "react";
 import {
   Lightning,
   EnvelopeSimple,
   GithubLogo,
   CheckCircle,
   Warning,
-  Trash,
-  CaretDown,
-  CaretUp,
-  Clock,
-  Database
 } from "@phosphor-icons/react";
 import { useLanguage } from "@/context/LanguageContext";
-
-interface SavedInquiry {
-  id: string;
-  timestamp: string;
-  name: string;
-  email: string;
-  message: string;
-  status?: string;
-}
 
 export default function Contact() {
   const { language, t } = useLanguage();
@@ -36,54 +21,6 @@ export default function Contact() {
 
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [errors, setErrors] = useState<{ name?: string; email?: string; message?: string }>({});
-
-  // SQLite Database & LocalStorage Inquiries List
-  const [savedInquiries, setSavedInquiries] = useState<SavedInquiry[]>([]);
-  const [showInquiriesDrawer, setShowInquiriesDrawer] = useState<boolean>(false);
-
-  // Load inquiries from SQLite Database via API on mount
-  useEffect(() => {
-    const fetchInquiries = async () => {
-      try {
-        const res = await fetch("/api/contact");
-        if (res.ok) {
-          const json = await res.json();
-          if (Array.isArray(json.data) && json.data.length > 0) {
-            const mapped: SavedInquiry[] = json.data.map((item: { id: string; name: string; email: string; message: string; created_at: string; status?: string }) => ({
-              id: item.id,
-              name: item.name,
-              email: item.email,
-              message: item.message,
-              timestamp: new Date(item.created_at).toLocaleDateString(language === "es" ? "es-ES" : "en-US", {
-                hour: "2-digit",
-                minute: "2-digit",
-              }),
-              status: item.status,
-            }));
-            setSavedInquiries(mapped);
-            return;
-          }
-        }
-      } catch (err) {
-        console.warn("Could not query DB inquiries, falling back to local storage", err);
-      }
-
-      // Fallback to localStorage if offline
-      try {
-        const stored = localStorage.getItem("nexus_saved_inquiries");
-        if (stored) {
-          const parsed = JSON.parse(stored);
-          if (Array.isArray(parsed)) {
-            setSavedInquiries(parsed);
-          }
-        }
-      } catch (e) {
-        console.warn("Failed to parse saved inquiries from localStorage", e);
-      }
-    };
-
-    fetchInquiries();
-  }, [language]);
 
   // Declarative Validation Engine
   const validationRules = {
@@ -166,51 +103,13 @@ export default function Contact() {
       });
 
       if (response.ok) {
-        const json = await response.json();
         setStatus("success");
-
-        const newInquiry: SavedInquiry = {
-          id: json.record?.id || `inq-${Date.now()}`,
-          timestamp: new Date().toLocaleDateString(language === "es" ? "es-ES" : "en-US", {
-            hour: "2-digit",
-            minute: "2-digit",
-          }),
-          name: formData.name.trim(),
-          email: formData.email.trim(),
-          message: formData.message.trim(),
-        };
-
-        const updatedInquiries = [newInquiry, ...savedInquiries];
-        setSavedInquiries(updatedInquiries);
-        try {
-          localStorage.setItem("nexus_saved_inquiries", JSON.stringify(updatedInquiries));
-        } catch (storageErr) {
-          console.warn("Could not write to localStorage", storageErr);
-        }
-
         setFormData({ name: "", email: "", phone: "", message: "" });
       } else {
         setStatus("error");
       }
     } catch {
       setStatus("error");
-    }
-  };
-
-  // Remove inquiry from SQLite Database and state
-  const handleRemoveInquiry = async (id: string) => {
-    try {
-      await fetch(`/api/contact?id=${encodeURIComponent(id)}`, { method: "DELETE" });
-    } catch (err) {
-      console.warn("Could not delete from DB", err);
-    }
-
-    const updated = savedInquiries.filter((inq) => inq.id !== id);
-    setSavedInquiries(updated);
-    try {
-      localStorage.setItem("nexus_saved_inquiries", JSON.stringify(updated));
-    } catch (e) {
-      console.warn("Could not update localStorage", e);
     }
   };
 
@@ -378,69 +277,8 @@ export default function Contact() {
                 >
                   {status === "loading" ? t.contact.status.loading[language] : t.contact.status.submit[language]}
                 </button>
-
-                {savedInquiries.length > 0 && (
-                  <button
-                    type="button"
-                    onClick={() => setShowInquiriesDrawer(!showInquiriesDrawer)}
-                    className="cursor-pointer text-xs font-mono text-zinc-600 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-zinc-200 flex items-center gap-1.5 transition-colors font-medium"
-                  >
-                    <Database size={14} className="text-blue-600 dark:text-blue-400" />
-                    <span>Consultas en BD ({savedInquiries.length})</span>
-                    {showInquiriesDrawer ? <CaretUp size={12} /> : <CaretDown size={12} />}
-                  </button>
-                )}
               </div>
             </form>
-
-            {/* Saved Inquiries Accordion Drawer */}
-            <AnimatePresence>
-              {showInquiriesDrawer && savedInquiries.length > 0 && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: "auto", opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.3 }}
-                  className="mt-6 pt-6 border-t border-zinc-200 dark:border-zinc-800 space-y-4"
-                >
-                  <div className="flex items-center justify-between text-xs font-mono">
-                    <span className="text-zinc-700 dark:text-zinc-300 font-semibold uppercase text-[11px] flex items-center gap-1.5">
-                      <Clock size={13} className="text-blue-600 dark:text-blue-400" />
-                      Historial de Mensajes (SQLite DB)
-                    </span>
-                    <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium">
-                      {savedInquiries.length} registro(s)
-                    </span>
-                  </div>
-
-                  <div className="space-y-3 max-h-64 overflow-y-auto pr-1">
-                    {savedInquiries.map((inq) => (
-                      <div
-                        key={inq.id}
-                        className="p-3.5 rounded-xl bg-white/90 dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 text-xs font-sans space-y-1.5 group hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors shadow-2xs"
-                      >
-                        <div className="flex items-center justify-between">
-                          <span className="font-semibold text-zinc-900 dark:text-zinc-100">{inq.name}</span>
-                          <div className="flex items-center gap-2">
-                            <span className="text-[10px] font-mono text-zinc-500 dark:text-zinc-400">{inq.timestamp}</span>
-                            <button
-                              type="button"
-                              onClick={() => handleRemoveInquiry(inq.id)}
-                              title="Eliminar registro de la base de datos"
-                              className="cursor-pointer text-zinc-400 hover:text-rose-500 dark:text-zinc-500 dark:hover:text-rose-400 transition-colors p-1"
-                            >
-                              <Trash size={13} />
-                            </button>
-                          </div>
-                        </div>
-                        <p className="text-zinc-600 dark:text-zinc-300 line-clamp-2 text-[11px]">{inq.message}</p>
-                        <span className="text-[10px] font-mono text-blue-600 dark:text-blue-400 block font-semibold">{inq.email}</span>
-                      </div>
-                    ))}
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
           </div>
 
           {/* Right Side: Studio Contact Info & Socials */}
