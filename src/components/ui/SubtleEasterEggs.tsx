@@ -15,7 +15,7 @@ export function LauraHeart() {
       </svg>
       {/* Tooltip */}
       <span className="pointer-events-none absolute bottom-full mb-2 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-zinc-900 border border-zinc-800 text-[10px] text-zinc-300 px-2 py-0.5 rounded font-mono whitespace-nowrap z-50">
-        Laura's Love
+        Laura&apos;s Love
       </span>
     </span>
   );

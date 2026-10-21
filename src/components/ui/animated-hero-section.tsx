@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react"
 
 const COLOR = "#FFFFFF"
 const HIT_COLOR = "#333333"
-const BACKGROUND_COLOR = "#000000"
+
 const BALL_COLOR = "#FFFFFF"
 const PADDLE_COLOR = "#FFFFFF"
 const LETTER_SPACING = 1

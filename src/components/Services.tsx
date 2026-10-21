@@ -7,15 +7,13 @@ import {
   Palette, 
   Cpu, 
   CheckCircle, 
-  ArrowUpRight,
   Lightning,
-  ShieldCheck
 } from "@phosphor-icons/react";
 import { useLanguage } from "@/context/LanguageContext";
 import { useDesign } from "@/context/DesignContext";
 
 export default function Services() {
-  const { language, t } = useLanguage();
+  const { language } = useLanguage();
   const { designMode } = useDesign();
 
   const services = [
@@ -23,7 +21,7 @@ export default function Services() {
       id: "01",
       icon: Code,
       accentColor: "from-blue-500/20 via-blue-500/5 to-transparent",
-      iconColor: "text-blue-400",
+      iconColor: "text-blue-600 dark:text-blue-400",
       title: language === "es" ? "Desarrollo Web & Móvil" : "Web & Mobile Development",
       description: language === "es"
         ? "Construcción de aplicaciones web de última generación, arquitecturas full-stack modernas y plataformas de alto rendimiento centradas en la fluidez y velocidad."
@@ -47,7 +45,7 @@ export default function Services() {
       id: "02",
       icon: CloudArrowUp,
       accentColor: "from-cyan-500/20 via-cyan-500/5 to-transparent",
-      iconColor: "text-cyan-400",
+      iconColor: "text-cyan-600 dark:text-cyan-400",
       title: language === "es" ? "Arquitectura Cloud & DevOps" : "Cloud Architecture & DevOps",
       description: language === "es"
         ? "Implementación de infraestructura resiliente, pipelines de despliegue continuo automatizados, CDN global y almacenamiento distribuido seguro."
@@ -71,7 +69,7 @@ export default function Services() {
       id: "03",
       icon: Palette,
       accentColor: "from-purple-500/20 via-purple-500/5 to-transparent",
-      iconColor: "text-purple-400",
+      iconColor: "text-purple-600 dark:text-purple-400",
       title: language === "es" ? "UI/UX & Sistemas de Diseño" : "UI/UX & Design Systems",
       description: language === "es"
         ? "Diseño visual de vanguardia, interfaces interactivas intuitivas y bibliotecas de componentes modulares alineadas a las mejores prácticas de experiencia de usuario."
@@ -95,7 +93,7 @@ export default function Services() {
       id: "04",
       icon: Cpu,
       accentColor: "from-amber-500/20 via-amber-500/5 to-transparent",
-      iconColor: "text-amber-400",
+      iconColor: "text-amber-600 dark:text-amber-400",
       title: language === "es" ? "Automatización & Soluciones con IA" : "Automation & AI Solutions",
       description: language === "es"
         ? "Integración de inteligencia artificial en flujos empresariales, agentes autónomos, procesamiento inteligente y optimización de tareas repetitivas."
@@ -118,7 +116,7 @@ export default function Services() {
   ];
 
   return (
-    <section id="servicios" className="relative py-28 px-6 bg-transparent border-t border-zinc-900/50 font-sans">
+    <section id="servicios" className="relative py-28 px-6 bg-transparent border-t border-zinc-200 dark:border-zinc-900/50 font-sans">
       {/* Subtle ambient lighting */}
       <div className="absolute top-1/2 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[550px] bg-blue-500/[0.015] rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2 w-[500px] h-[500px] bg-purple-500/[0.015] rounded-full blur-3xl pointer-events-none" />
@@ -126,14 +124,14 @@ export default function Services() {
       <div className="max-w-7xl mx-auto relative z-10">
         {/* Section Header */}
         <div className="max-w-3xl mb-16">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-mono mb-4">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-600 dark:text-blue-400 text-xs font-mono mb-4 font-semibold">
             <Lightning size={14} weight="fill" />
             <span>{language === "es" ? "NUESTRAS CAPACIDADES" : "OUR CAPABILITIES"}</span>
           </div>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight text-zinc-100">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
             {language === "es" ? "Servicios & Soluciones" : "Services & Solutions"}
           </h2>
-          <p className="mt-4 text-sm sm:text-base text-zinc-400 leading-relaxed max-w-2xl">
+          <p className="mt-4 text-sm sm:text-base text-zinc-600 dark:text-zinc-400 leading-relaxed max-w-2xl">
             {language === "es"
               ? "Diseñamos e implementamos software moderno de principio a fin, combinando arquitectura de nube, interfaces interactivas y tecnologías emergentes."
               : "We design and deploy modern software from start to finish, combining cloud architecture, interactive interfaces, and emerging technologies."}
@@ -153,8 +151,8 @@ export default function Services() {
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 className={`group relative rounded-2xl border p-8 flex flex-col justify-between overflow-hidden transition-all duration-300 ${
                   designMode === "glass"
-                    ? "glass-card hover:border-zinc-700/60"
-                    : "bg-zinc-950/60 border-zinc-800/80 hover:border-zinc-700 hover:shadow-2xl hover:shadow-blue-950/20"
+                    ? "glass-card hover:border-zinc-300 dark:hover:border-zinc-700/60"
+                    : "bg-white/80 dark:bg-zinc-950/60 border-zinc-200 dark:border-zinc-800/80 hover:border-zinc-300 dark:hover:border-zinc-700 hover:shadow-xl"
                 }`}
               >
                 {/* Glow gradient accent on hover */}
@@ -165,27 +163,27 @@ export default function Services() {
                 <div className="relative z-10">
                   {/* Top Bar: Icon & ID */}
                   <div className="flex items-center justify-between mb-6">
-                    <div className="w-12 h-12 rounded-xl bg-zinc-900/90 border border-zinc-800 flex items-center justify-center text-xl shadow-inner group-hover:scale-105 transition-transform duration-300">
+                    <div className="w-12 h-12 rounded-xl bg-zinc-100 dark:bg-zinc-900/90 border border-zinc-200 dark:border-zinc-800 flex items-center justify-center text-xl shadow-xs group-hover:scale-105 transition-transform duration-300">
                       <Icon className={`${service.iconColor}`} size={24} weight="duotone" />
                     </div>
-                    <span className="font-mono text-xs text-zinc-600 font-semibold tracking-wider">
+                    <span className="font-mono text-xs text-zinc-400 dark:text-zinc-600 font-semibold tracking-wider">
                       {service.id}
                     </span>
                   </div>
 
                   {/* Title & Description */}
-                  <h3 className="text-xl font-semibold text-zinc-100 group-hover:text-white transition-colors tracking-tight mb-3">
+                  <h3 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100 group-hover:text-blue-600 dark:group-hover:text-white transition-colors tracking-tight mb-3">
                     {service.title}
                   </h3>
-                  <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed mb-6">
+                  <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed mb-6">
                     {service.description}
                   </p>
 
                   {/* Capabilities Checklist */}
                   <div className="space-y-2 mb-6">
                     {service.capabilities.map((cap, i) => (
-                      <div key={i} className="flex items-center gap-2.5 text-xs text-zinc-300">
-                        <CheckCircle size={14} className="text-blue-400 shrink-0" weight="fill" />
+                      <div key={i} className="flex items-center gap-2.5 text-xs text-zinc-700 dark:text-zinc-300">
+                        <CheckCircle size={14} className="text-blue-500 dark:text-blue-400 shrink-0" weight="fill" />
                         <span>{cap}</span>
                       </div>
                     ))}
@@ -193,11 +191,11 @@ export default function Services() {
                 </div>
 
                 {/* Bottom Tags */}
-                <div className="relative z-10 pt-4 border-t border-zinc-800/60 flex flex-wrap gap-2">
+                <div className="relative z-10 pt-4 border-t border-zinc-200 dark:border-zinc-800/60 flex flex-wrap gap-2">
                   {service.tags.map((tag) => (
                     <span
                       key={tag}
-                      className="px-2.5 py-1 text-[11px] font-mono text-zinc-400 bg-zinc-900/70 border border-zinc-800/80 rounded-md group-hover:border-zinc-700/60 transition-colors"
+                      className="px-2.5 py-1 text-[11px] font-mono text-zinc-600 dark:text-zinc-400 bg-zinc-100/90 dark:bg-zinc-900/70 border border-zinc-200 dark:border-zinc-800/80 rounded-md group-hover:border-zinc-300 dark:group-hover:border-zinc-700/60 transition-colors"
                     >
                       {tag}
                     </span>

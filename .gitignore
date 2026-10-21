@@ -45,3 +45,6 @@ submissions.json
 
 # ide & agent settings
 .claude/
+
+# sqlite database files
+data/*.db*

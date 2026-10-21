@@ -8,11 +8,11 @@ import {
   GithubLogo,
   CheckCircle,
   Warning,
-  FloppyDisk,
   Trash,
   CaretDown,
   CaretUp,
-  Clock
+  Clock,
+  Database
 } from "@phosphor-icons/react";
 import { useLanguage } from "@/context/LanguageContext";
 
@@ -22,6 +22,7 @@ interface SavedInquiry {
   name: string;
   email: string;
   message: string;
+  status?: string;
 }
 
 export default function Contact() {
@@ -29,32 +30,62 @@ export default function Contact() {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
+    phone: "",
     message: "",
   });
 
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [errors, setErrors] = useState<{ name?: string; email?: string; message?: string }>({});
 
-  // 1. JSON & LOCALSTORAGE: Saved Inquiries List
+  // SQLite Database & LocalStorage Inquiries List
   const [savedInquiries, setSavedInquiries] = useState<SavedInquiry[]>([]);
   const [showInquiriesDrawer, setShowInquiriesDrawer] = useState<boolean>(false);
 
-  // Load from localStorage on mount using JSON.parse()
+  // Load inquiries from SQLite Database via API on mount
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem("nexus_saved_inquiries");
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed)) {
-          setSavedInquiries(parsed);
+    const fetchInquiries = async () => {
+      try {
+        const res = await fetch("/api/contact");
+        if (res.ok) {
+          const json = await res.json();
+          if (Array.isArray(json.data) && json.data.length > 0) {
+            const mapped: SavedInquiry[] = json.data.map((item: { id: string; name: string; email: string; message: string; created_at: string; status?: string }) => ({
+              id: item.id,
+              name: item.name,
+              email: item.email,
+              message: item.message,
+              timestamp: new Date(item.created_at).toLocaleDateString(language === "es" ? "es-ES" : "en-US", {
+                hour: "2-digit",
+                minute: "2-digit",
+              }),
+              status: item.status,
+            }));
+            setSavedInquiries(mapped);
+            return;
+          }
         }
+      } catch (err) {
+        console.warn("Could not query DB inquiries, falling back to local storage", err);
       }
-    } catch (e) {
-      console.warn("Failed to parse saved inquiries from localStorage", e);
-    }
-  }, []);
 
-  // 2. DECLARATIVE VALIDATION ENGINE (rules & messages)
+      // Fallback to localStorage if offline
+      try {
+        const stored = localStorage.getItem("nexus_saved_inquiries");
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed)) {
+            setSavedInquiries(parsed);
+          }
+        }
+      } catch (e) {
+        console.warn("Failed to parse saved inquiries from localStorage", e);
+      }
+    };
+
+    fetchInquiries();
+  }, [language]);
+
+  // Declarative Validation Engine
   const validationRules = {
     name: { required: true, minLength: 3 },
     email: { required: true, email: true },
@@ -115,12 +146,12 @@ export default function Contact() {
     }
   };
 
-  // 3. FORM SUBMISSION INTERCEPT (e.preventDefault() + JSON.stringify() + localStorage + remote API)
+  // FORM SUBMISSION (Saves to SQLite DB via API + Local Storage fallback)
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault(); // 🛑 Intercepts form submission and halts default flow
+    e.preventDefault();
 
     if (!validateForm()) {
-      return; // Halts flow if rules fail
+      return;
     }
 
     setStatus("loading");
@@ -135,11 +166,11 @@ export default function Contact() {
       });
 
       if (response.ok) {
+        const json = await response.json();
         setStatus("success");
 
-        // Save structured inquiry object to localStorage with JSON.stringify()
         const newInquiry: SavedInquiry = {
-          id: `inq-${Date.now()}`,
+          id: json.record?.id || `inq-${Date.now()}`,
           timestamp: new Date().toLocaleDateString(language === "es" ? "es-ES" : "en-US", {
             hour: "2-digit",
             minute: "2-digit",
@@ -157,7 +188,7 @@ export default function Contact() {
           console.warn("Could not write to localStorage", storageErr);
         }
 
-        setFormData({ name: "", email: "", message: "" });
+        setFormData({ name: "", email: "", phone: "", message: "" });
       } else {
         setStatus("error");
       }
@@ -166,8 +197,14 @@ export default function Contact() {
     }
   };
 
-  // 4. DOM MANIPULATION: Remove saved inquiry node and update storage (.remove())
-  const handleRemoveInquiry = (id: string) => {
+  // Remove inquiry from SQLite Database and state
+  const handleRemoveInquiry = async (id: string) => {
+    try {
+      await fetch(`/api/contact?id=${encodeURIComponent(id)}`, { method: "DELETE" });
+    } catch (err) {
+      console.warn("Could not delete from DB", err);
+    }
+
     const updated = savedInquiries.filter((inq) => inq.id !== id);
     setSavedInquiries(updated);
     try {
@@ -196,16 +233,16 @@ export default function Contact() {
 
         {/* 2-Column Responsive Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
-          {/* Left Side: Contact Form with Declarative Validation */}
-          <div className="lg:col-span-7 glass-card p-8 rounded-2xl relative">
+          {/* Left Side: Contact Form */}
+          <div className="lg:col-span-7 glass-card p-8 rounded-2xl relative shadow-lg">
             <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-6">
               {/* Name Field */}
               <div className="flex flex-col gap-1.5">
                 <div className="flex items-center justify-between">
-                  <label htmlFor="name" className="text-xs font-medium text-zinc-700 dark:text-zinc-400">
+                  <label htmlFor="name" className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
                     {t.contact.nameLabel[language]} <span className="text-rose-500 dark:text-rose-400">*</span>
                   </label>
-                  <span className="text-[10px] font-mono text-zinc-500 dark:text-zinc-500">Regla: min 3 caracteres</span>
+                  <span className="text-[10px] font-mono text-zinc-500 dark:text-zinc-400 font-medium">Regla: min 3 caracteres</span>
                 </div>
                 <input
                   type="text"
@@ -216,9 +253,9 @@ export default function Contact() {
                   disabled={status === "loading"}
                   aria-invalid={!!errors.name}
                   aria-describedby={errors.name ? "name-error" : undefined}
-                  className={`w-full py-2 bg-transparent border-b text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-600 transition-colors focus:outline-none rounded-none ${
+                  className={`w-full py-2.5 px-1 bg-transparent border-b text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-600 transition-colors focus:outline-none rounded-none ${
                     errors.name
-                      ? "border-rose-500/80 focus:border-rose-500 bg-rose-500/[0.02]"
+                      ? "border-rose-500 focus:border-rose-500 bg-rose-500/[0.03]"
                       : "border-zinc-300 dark:border-zinc-800 focus:border-blue-500"
                   }`}
                   placeholder={t.contact.namePlaceholder[language]}
@@ -234,10 +271,10 @@ export default function Contact() {
               {/* Email Field */}
               <div className="flex flex-col gap-1.5">
                 <div className="flex items-center justify-between">
-                  <label htmlFor="email" className="text-xs font-medium text-zinc-700 dark:text-zinc-400">
+                  <label htmlFor="email" className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
                     {t.contact.emailLabel[language]} <span className="text-rose-500 dark:text-rose-400">*</span>
                   </label>
-                  <span className="text-[10px] font-mono text-zinc-500 dark:text-zinc-500">Regla: formato RFC 5322</span>
+                  <span className="text-[10px] font-mono text-zinc-500 dark:text-zinc-400 font-medium">Regla: formato RFC 5322</span>
                 </div>
                 <input
                   type="email"
@@ -248,9 +285,9 @@ export default function Contact() {
                   disabled={status === "loading"}
                   aria-invalid={!!errors.email}
                   aria-describedby={errors.email ? "email-error" : undefined}
-                  className={`w-full py-2 bg-transparent border-b text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-600 transition-colors focus:outline-none rounded-none ${
+                  className={`w-full py-2.5 px-1 bg-transparent border-b text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-600 transition-colors focus:outline-none rounded-none ${
                     errors.email
-                      ? "border-rose-500/80 focus:border-rose-500 bg-rose-500/[0.02]"
+                      ? "border-rose-500 focus:border-rose-500 bg-rose-500/[0.03]"
                       : "border-zinc-300 dark:border-zinc-800 focus:border-blue-500"
                   }`}
                   placeholder={t.contact.emailPlaceholder[language]}
@@ -263,13 +300,33 @@ export default function Contact() {
                 )}
               </div>
 
+              {/* Optional Phone / WhatsApp Field */}
+              <div className="flex flex-col gap-1.5">
+                <div className="flex items-center justify-between">
+                  <label htmlFor="phone" className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                    {language === "es" ? "Teléfono o WhatsApp" : "Phone or WhatsApp"} <span className="text-[10px] text-zinc-400 font-normal">({language === "es" ? "Opcional" : "Optional"})</span>
+                  </label>
+                  <span className="text-[10px] font-mono text-zinc-500 dark:text-zinc-400 font-medium">Prioridad Rápida</span>
+                </div>
+                <input
+                  type="tel"
+                  id="phone"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  disabled={status === "loading"}
+                  className="w-full py-2.5 px-1 bg-transparent border-b text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-600 transition-colors focus:outline-none rounded-none border-zinc-300 dark:border-zinc-800 focus:border-blue-500 font-mono"
+                  placeholder="+1 555 123 4567"
+                />
+              </div>
+
               {/* Message Field */}
               <div className="flex flex-col gap-1.5">
                 <div className="flex items-center justify-between">
-                  <label htmlFor="message" className="text-xs font-medium text-zinc-700 dark:text-zinc-400">
+                  <label htmlFor="message" className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
                     {t.contact.messageLabel[language]} <span className="text-rose-500 dark:text-rose-400">*</span>
                   </label>
-                  <span className="text-[10px] font-mono text-zinc-500 dark:text-zinc-500">Regla: min 10 caracteres</span>
+                  <span className="text-[10px] font-mono text-zinc-500 dark:text-zinc-400 font-medium">Regla: min 10 caracteres</span>
                 </div>
                 <textarea
                   id="message"
@@ -280,9 +337,9 @@ export default function Contact() {
                   disabled={status === "loading"}
                   aria-invalid={!!errors.message}
                   aria-describedby={errors.message ? "message-error" : undefined}
-                  className={`w-full py-2 bg-transparent border-b text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-600 transition-colors focus:outline-none rounded-none resize-none ${
+                  className={`w-full py-2.5 px-1 bg-transparent border-b text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-600 transition-colors focus:outline-none rounded-none resize-none ${
                     errors.message
-                      ? "border-rose-500/80 focus:border-rose-500 bg-rose-500/[0.02]"
+                      ? "border-rose-500 focus:border-rose-500 bg-rose-500/[0.03]"
                       : "border-zinc-300 dark:border-zinc-800 focus:border-blue-500"
                   }`}
                   placeholder={t.contact.messagePlaceholder[language]}
@@ -297,20 +354,22 @@ export default function Contact() {
 
               {/* Success & Error Messages */}
               {status === "success" && (
-                <div className="p-4 bg-emerald-500/10 border border-emerald-500/30 text-xs text-emerald-600 dark:text-emerald-400 rounded-md flex items-center gap-2">
-                  <CheckCircle size={16} weight="fill" />
-                  <span className="font-medium">{t.contact.status.success[language]}</span>
+                <div className="p-4 bg-emerald-500/10 border border-emerald-500/30 text-xs text-emerald-700 dark:text-emerald-400 rounded-lg flex items-center gap-2">
+                  <CheckCircle size={16} weight="fill" className="shrink-0" />
+                  <span className="font-medium">
+                    {t.contact.status.success[language]} &mdash; Guardado en base de datos SQLite.
+                  </span>
                 </div>
               )}
 
               {status === "error" && (
-                <div className="p-4 bg-rose-500/10 border border-rose-500/30 text-xs text-rose-600 dark:text-rose-400 rounded-md flex items-center gap-2">
-                  <Warning size={16} weight="fill" />
+                <div className="p-4 bg-rose-500/10 border border-rose-500/30 text-xs text-rose-700 dark:text-rose-400 rounded-lg flex items-center gap-2">
+                  <Warning size={16} weight="fill" className="shrink-0" />
                   <span className="font-medium">{t.contact.status.error[language]}</span>
                 </div>
               )}
 
-              {/* Submit button */}
+              {/* Submit button & Inquiries toggle */}
               <div className="flex items-center justify-between pt-2">
                 <button
                   type="submit"
@@ -324,17 +383,17 @@ export default function Contact() {
                   <button
                     type="button"
                     onClick={() => setShowInquiriesDrawer(!showInquiriesDrawer)}
-                    className="cursor-pointer text-xs font-mono text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 flex items-center gap-1.5 transition-colors"
+                    className="cursor-pointer text-xs font-mono text-zinc-600 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-zinc-200 flex items-center gap-1.5 transition-colors font-medium"
                   >
-                    <FloppyDisk size={14} className="text-blue-600 dark:text-blue-400" />
-                    <span>Consultas guardadas ({savedInquiries.length})</span>
+                    <Database size={14} className="text-blue-600 dark:text-blue-400" />
+                    <span>Consultas en BD ({savedInquiries.length})</span>
                     {showInquiriesDrawer ? <CaretUp size={12} /> : <CaretDown size={12} />}
                   </button>
                 )}
               </div>
             </form>
 
-            {/* Saved Inquiries Accordion Drawer (.slideDown()) */}
+            {/* Saved Inquiries Accordion Drawer */}
             <AnimatePresence>
               {showInquiriesDrawer && savedInquiries.length > 0 && (
                 <motion.div
@@ -342,14 +401,14 @@ export default function Contact() {
                   animate={{ height: "auto", opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}
                   transition={{ duration: 0.3 }}
-                  className="mt-6 pt-6 border-t border-zinc-200 dark:border-zinc-900/80 space-y-4"
+                  className="mt-6 pt-6 border-t border-zinc-200 dark:border-zinc-800 space-y-4"
                 >
                   <div className="flex items-center justify-between text-xs font-mono">
-                    <span className="text-zinc-600 dark:text-zinc-400 font-semibold uppercase text-[11px] flex items-center gap-1.5">
+                    <span className="text-zinc-700 dark:text-zinc-300 font-semibold uppercase text-[11px] flex items-center gap-1.5">
                       <Clock size={13} className="text-blue-600 dark:text-blue-400" />
-                      Historial Local (localStorage)
+                      Historial de Mensajes (SQLite DB)
                     </span>
-                    <span className="text-[10px] text-zinc-500">
+                    <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium">
                       {savedInquiries.length} registro(s)
                     </span>
                   </div>
@@ -358,24 +417,24 @@ export default function Contact() {
                     {savedInquiries.map((inq) => (
                       <div
                         key={inq.id}
-                        className="p-3.5 rounded-xl bg-zinc-100/90 dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 text-xs font-sans space-y-1.5 group hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors"
+                        className="p-3.5 rounded-xl bg-white/90 dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 text-xs font-sans space-y-1.5 group hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors shadow-2xs"
                       >
                         <div className="flex items-center justify-between">
-                          <span className="font-semibold text-zinc-900 dark:text-zinc-200">{inq.name}</span>
+                          <span className="font-semibold text-zinc-900 dark:text-zinc-100">{inq.name}</span>
                           <div className="flex items-center gap-2">
-                            <span className="text-[10px] font-mono text-zinc-500">{inq.timestamp}</span>
+                            <span className="text-[10px] font-mono text-zinc-500 dark:text-zinc-400">{inq.timestamp}</span>
                             <button
                               type="button"
                               onClick={() => handleRemoveInquiry(inq.id)}
-                              title="Eliminar registro (.remove())"
+                              title="Eliminar registro de la base de datos"
                               className="cursor-pointer text-zinc-400 hover:text-rose-500 dark:text-zinc-500 dark:hover:text-rose-400 transition-colors p-1"
                             >
                               <Trash size={13} />
                             </button>
                           </div>
                         </div>
-                        <p className="text-zinc-600 dark:text-zinc-400 line-clamp-2 text-[11px]">{inq.message}</p>
-                        <span className="text-[10px] font-mono text-blue-600 dark:text-blue-400 block font-medium">{inq.email}</span>
+                        <p className="text-zinc-600 dark:text-zinc-300 line-clamp-2 text-[11px]">{inq.message}</p>
+                        <span className="text-[10px] font-mono text-blue-600 dark:text-blue-400 block font-semibold">{inq.email}</span>
                       </div>
                     ))}
                   </div>
@@ -385,14 +444,14 @@ export default function Contact() {
           </div>
 
           {/* Right Side: Studio Contact Info & Socials */}
-          <div className="lg:col-span-5 glass-card p-8 rounded-2xl flex flex-col justify-between gap-10">
+          <div className="lg:col-span-5 glass-card p-8 rounded-2xl flex flex-col justify-between gap-10 shadow-lg">
             {/* Studio Header */}
-            <div className="flex items-center gap-4 pb-6 border-b border-zinc-200 dark:border-zinc-900/80">
-              <div className="w-16 h-16 rounded-2xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-600 dark:text-blue-400 shadow-xl shrink-0">
+            <div className="flex items-center gap-4 pb-6 border-b border-zinc-200 dark:border-zinc-800">
+              <div className="w-16 h-16 rounded-2xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-600 dark:text-blue-400 shadow-sm shrink-0">
                 <Lightning size={32} weight="fill" />
               </div>
               <div className="flex flex-col gap-1">
-                <div className="inline-flex items-center gap-2 text-[10px] font-mono text-emerald-600 dark:text-emerald-400 uppercase tracking-wider font-semibold">
+                <div className="inline-flex items-center gap-2 text-[10px] font-mono text-emerald-700 dark:text-emerald-400 uppercase tracking-wider font-semibold">
                   <span className="relative flex h-2 w-2">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                     <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
@@ -417,24 +476,30 @@ export default function Contact() {
 
               <div className="grid grid-cols-1 gap-5 pt-2">
                 <div className="border-l border-zinc-200 dark:border-zinc-800 pl-4 py-1">
-                  <span className="block text-[9px] font-mono text-zinc-500 uppercase tracking-widest">{t.contact.email[language]}</span>
+                  <span className="block text-[9px] font-mono text-zinc-500 dark:text-zinc-400 uppercase tracking-widest font-medium">
+                    {t.contact.email[language]}
+                  </span>
                   <a
                     href="mailto:omarapp1921@gmail.com"
-                    className="text-xs text-zinc-800 dark:text-zinc-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors font-mono"
+                    className="text-xs text-zinc-800 dark:text-zinc-200 hover:text-blue-600 dark:hover:text-blue-400 transition-colors font-mono font-medium"
                   >
                     contacto@nexusweb.dev
                   </a>
                 </div>
 
                 <div className="border-l border-zinc-200 dark:border-zinc-800 pl-4 py-1">
-                  <span className="block text-[9px] font-mono text-zinc-500 uppercase tracking-widest">{t.contact.location[language]}</span>
-                  <p className="text-xs text-zinc-800 dark:text-zinc-300">{t.contact.locationValue[language]}</p>
+                  <span className="block text-[9px] font-mono text-zinc-500 dark:text-zinc-400 uppercase tracking-widest font-medium">
+                    {t.contact.location[language]}
+                  </span>
+                  <p className="text-xs text-zinc-800 dark:text-zinc-200 font-medium">
+                    {t.contact.locationValue[language]}
+                  </p>
                 </div>
               </div>
             </div>
 
             {/* Social Panel */}
-            <div className="space-y-4 pt-4 border-t border-zinc-200 dark:border-zinc-900/80">
+            <div className="space-y-4 pt-4 border-t border-zinc-200 dark:border-zinc-800">
               <h3 className="text-xs font-mono uppercase tracking-wider text-zinc-500 dark:text-zinc-400 font-semibold">
                 {t.contact.socials[language]}
               </h3>
@@ -443,7 +508,7 @@ export default function Contact() {
                   href="https://github.com/omarapp19/tecnologiaweb"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 text-xs text-zinc-800 dark:text-zinc-300 hover:text-black dark:hover:text-white transition-colors px-3 py-1.5 rounded-lg bg-zinc-100 dark:bg-zinc-900/80 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700"
+                  className="inline-flex items-center gap-1.5 text-xs text-zinc-800 dark:text-zinc-300 hover:text-black dark:hover:text-white transition-colors px-3 py-1.5 rounded-lg bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 shadow-2xs"
                 >
                   <GithubLogo size={14} />
                   <span>GitHub Repository</span>

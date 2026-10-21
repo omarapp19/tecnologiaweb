@@ -27,11 +27,11 @@ export default function Hero() {
       <ThreeElement />
 
       {/* Floating Scroll Indicator Overlay */}
-      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2.5 pointer-events-none">
-        <span className="text-[10px] font-bold tracking-widest text-zinc-550 font-mono uppercase animate-pulse">
+      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2.5 pointer-events-none select-none">
+        <span className="text-[10px] font-bold tracking-widest text-zinc-600 dark:text-zinc-400 font-mono uppercase animate-pulse">
           {t.hero.scroll[language]}
         </span>
-        <div className="w-6 h-10 rounded-full border border-zinc-800 bg-background/60 backdrop-blur-sm flex justify-center p-1">
+        <div className="w-6 h-10 rounded-full border border-zinc-300 dark:border-zinc-800 bg-white/70 dark:bg-background/60 backdrop-blur-sm flex justify-center p-1 shadow-sm">
           <div className="w-1.5 h-3 bg-blue-500 rounded-full animate-bounce" />
         </div>
       </div>

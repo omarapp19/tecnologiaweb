@@ -19,14 +19,14 @@ export default function Home() {
       <Navbar />
 
       {/* Main Content Sections */}
-      <main className="w-full min-h-screen bg-transparent text-zinc-100 flex flex-col relative z-10">
+      <main className="w-full min-h-screen bg-transparent text-foreground flex flex-col relative z-10">
         {/* Hero Section */}
         <Hero />
 
         {/* Corporate Services & Solutions */}
         <Services />
 
-        {/* Interactive Solution Builder & Live Estimator (DOM, Animations, Dynamic Nodes & JSON) */}
+        {/* Interactive Solution Builder & Live Estimator (DOM, Animations, Dynamic Nodes & Database) */}
         <ProjectEstimator />
 
         {/* Selected Works Bento Showcase */}

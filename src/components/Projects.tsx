@@ -196,7 +196,7 @@ export default function Projects() {
   }, [isPaused, currentIndex, handleNext]);
 
   return (
-    <section id="proyectos" className="relative overflow-hidden py-24 px-6 bg-transparent border-t border-zinc-900/50 font-sans">
+    <section id="proyectos" className="relative overflow-hidden py-24 px-6 bg-transparent border-t border-zinc-200 dark:border-zinc-900/50 font-sans">
       {/* Ambient glass glowing decorations */}
       <div className="absolute top-1/3 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-blue-500/[0.02] rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-1/3 right-1/4 translate-x-1/2 translate-y-1/2 w-[600px] h-[600px] bg-blue-500/[0.015] rounded-full blur-3xl pointer-events-none" />
@@ -209,7 +209,7 @@ export default function Projects() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.3 }}
             transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-            className="text-2xl md:text-3xl font-medium tracking-tight text-white mb-3"
+            className="text-2xl md:text-3xl font-medium tracking-tight text-zinc-900 dark:text-white mb-3"
           >
             {t.projects.title[language]}
           </motion.h2>
@@ -218,7 +218,7 @@ export default function Projects() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.3 }}
             transition={{ duration: 0.5, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-            className="text-zinc-455 text-sm leading-relaxed max-w-[60ch]"
+            className="text-zinc-600 dark:text-zinc-400 text-sm leading-relaxed max-w-[60ch]"
           >
             {t.projects.subtitle[language]}
           </motion.p>
@@ -253,7 +253,7 @@ export default function Projects() {
                   {/* Clean Image Container with Glass Vibe */}
                   <div className="lg:col-span-7 relative aspect-[16/10] w-full">
                     {/* Main Background Image */}
-                    <div className="absolute inset-0 overflow-hidden bg-zinc-950 border border-zinc-900/50 rounded-xl">
+                    <div className="absolute inset-0 overflow-hidden bg-zinc-100 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-900/50 rounded-xl">
                       <Image
                         src={project.image}
                         alt={project.title}
@@ -269,7 +269,7 @@ export default function Projects() {
                     {/* Overlapping Mobile Mockup */}
                     {project.mobileImage && (
                       <div className="absolute right-4 sm:right-6 bottom-[-12px] sm:bottom-[-20px] w-[24%] min-w-[70px] max-w-[120px] aspect-[9/19.5] z-20 transition-all duration-500 ease-out group-hover:translate-y-[-10px] group-hover:scale-105 group-hover:rotate-[-2deg] filter drop-shadow-[0_15px_15px_rgba(0,0,0,0.8)]">
-                        <div className="relative w-full h-full rounded-[12px] sm:rounded-[20px] overflow-hidden border-[3px] sm:border-[5px] border-zinc-900 bg-zinc-950">
+                        <div className="relative w-full h-full rounded-[12px] sm:rounded-[20px] overflow-hidden border-[3px] sm:border-[5px] border-zinc-300 dark:border-zinc-900 bg-zinc-100 dark:bg-zinc-950">
                           <Image
                             src={project.mobileImage}
                             alt={`${project.title} responsive`}
@@ -284,15 +284,15 @@ export default function Projects() {
 
                   {/* Text metadata and info */}
                   <div className="lg:col-span-5 flex flex-col gap-3.5">
-                    <span className="text-[10px] font-mono tracking-widest text-zinc-550 uppercase">
+                    <span className="text-[10px] font-mono tracking-widest text-zinc-500 dark:text-zinc-400 uppercase font-semibold">
                       {project.id} &mdash; {project.category}
                     </span>
 
-                    <h3 className="text-xl sm:text-2xl font-bold text-zinc-100 group-hover:text-accent transition-colors">
+                    <h3 className="text-xl sm:text-2xl font-bold text-zinc-900 dark:text-zinc-100 group-hover:text-blue-600 dark:group-hover:text-accent transition-colors">
                       {project.title}
                     </h3>
 
-                    <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed font-normal">
+                    <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed font-normal">
                       {project.description}
                     </p>
 
@@ -301,7 +301,7 @@ export default function Projects() {
                       {project.tags.map((tag) => (
                         <span
                           key={tag}
-                          className="text-[10px] font-mono text-zinc-500"
+                          className="text-[10px] font-mono text-zinc-600 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-900/70 border border-zinc-200 dark:border-zinc-800/80 px-2 py-0.5 rounded"
                         >
                           {tag}
                         </span>
@@ -315,7 +315,7 @@ export default function Projects() {
                           href={project.link}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1.5 text-xs font-medium text-accent hover:text-accent-hover transition-colors"
+                          className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 dark:text-accent hover:text-blue-700 dark:hover:text-accent-hover transition-colors"
                         >
                           {t.projects.visit[language]}
                           <ArrowUpRight size={13} weight="bold" />
@@ -342,7 +342,7 @@ export default function Projects() {
                 className="relative h-1.5 rounded-full overflow-hidden transition-all duration-300"
                 style={{
                   width: currentIndex === index ? "2.5rem" : "0.5rem",
-                  backgroundColor: currentIndex === index ? "rgba(59,130,246,0.2)" : "rgba(var(--white-rgb), 0.1)",
+                  backgroundColor: currentIndex === index ? "rgba(59,130,246,0.3)" : "rgba(113,113,122,0.3)",
                 }}
               >
                 {currentIndex === index && (
@@ -365,14 +365,14 @@ export default function Projects() {
           <div className="flex gap-3">
             <button
               onClick={handlePrev}
-              className="p-3 rounded-full border border-white/[0.05] bg-zinc-900/50 hover:bg-zinc-800 text-zinc-400 hover:text-white transition-all duration-300 active:scale-95"
+              className="p-3 rounded-full border border-zinc-200 dark:border-zinc-800 bg-white/80 hover:bg-zinc-100 dark:bg-zinc-900/50 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-white shadow-xs transition-all duration-300 active:scale-95 cursor-pointer"
               aria-label={t.projects.prev[language]}
             >
               <CaretLeft size={18} weight="bold" />
             </button>
             <button
               onClick={handleNext}
-              className="p-3 rounded-full border border-white/[0.05] bg-zinc-900/50 hover:bg-zinc-800 text-zinc-400 hover:text-white transition-all duration-300 active:scale-95"
+              className="p-3 rounded-full border border-zinc-200 dark:border-zinc-800 bg-white/80 hover:bg-zinc-100 dark:bg-zinc-900/50 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-white shadow-xs transition-all duration-300 active:scale-95 cursor-pointer"
               aria-label={t.projects.next[language]}
             >
               <CaretRight size={18} weight="bold" />

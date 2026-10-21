@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { Sun, Moon, Sparkle, Cube, CaretRight, CaretLeft } from "@phosphor-icons/react";
+import Link from "next/link";
+import { Sun, Moon, Sparkle, Cube, CaretRight, CaretLeft, ShieldCheck } from "@phosphor-icons/react";
 import { motion } from "motion/react";
 import { useDesign } from "@/context/DesignContext";
 
@@ -50,9 +51,11 @@ export default function ThemeToggle() {
     if (newTheme === theme) return;
     if (newTheme === "light") {
       document.documentElement.classList.add("light");
+      document.documentElement.classList.remove("dark");
       localStorage.setItem("theme", "light");
       setTheme("light");
     } else {
+      document.documentElement.classList.add("dark");
       document.documentElement.classList.remove("light");
       localStorage.setItem("theme", "dark");
       setTheme("dark");
@@ -89,14 +92,14 @@ export default function ThemeToggle() {
       >
         {/* SECTION 1: THEME (Light / Dark) */}
         <div className="flex flex-col items-center gap-1.5">
-          <span className="text-[9px] font-mono tracking-wider uppercase text-zinc-400 dark:text-zinc-500">
+          <span className="text-[9px] font-mono tracking-wider uppercase text-zinc-500 dark:text-zinc-400">
             Modo
           </span>
           <div
             className={`relative flex flex-col gap-2 p-1 rounded-full border items-center ${
               isLight
                 ? "bg-zinc-100/90 border-zinc-200/70"
-                : "bg-zinc-900/70 border-white/[0.06]"
+                : "bg-zinc-900/70 border-zinc-800"
             } ${
               isNeo
                 ? isLight
@@ -124,7 +127,7 @@ export default function ThemeToggle() {
             <button
               onClick={() => toggleTheme("light")}
               className={`w-7 h-7 flex items-center justify-center rounded-full transition-colors z-10 cursor-pointer ${
-                isLight ? "text-blue-600" : "text-zinc-500 hover:text-zinc-300"
+                isLight ? "text-blue-600" : "text-zinc-400 hover:text-zinc-200"
               }`}
               aria-label="Modo claro"
               title="Modo Claro"
@@ -136,7 +139,7 @@ export default function ThemeToggle() {
             <button
               onClick={() => toggleTheme("dark")}
               className={`w-7 h-7 flex items-center justify-center rounded-full transition-colors z-10 cursor-pointer ${
-                !isLight ? "text-blue-400" : "text-zinc-400 hover:text-zinc-600"
+                !isLight ? "text-blue-400" : "text-zinc-500 hover:text-zinc-700"
               }`}
               aria-label="Modo oscuro"
               title="Modo Oscuro"
@@ -155,14 +158,14 @@ export default function ThemeToggle() {
 
         {/* SECTION 2: STYLE (Glassmorphism / Neomorphism) */}
         <div className="flex flex-col items-center gap-1.5">
-          <span className="text-[9px] font-mono tracking-wider uppercase text-zinc-400 dark:text-zinc-500">
+          <span className="text-[9px] font-mono tracking-wider uppercase text-zinc-500 dark:text-zinc-400">
             Estilo
           </span>
           <div
             className={`relative flex flex-col gap-2 p-1 rounded-full border items-center ${
               isLight
                 ? "bg-zinc-100/90 border-zinc-200/70"
-                : "bg-zinc-900/70 border-white/[0.06]"
+                : "bg-zinc-900/70 border-zinc-800"
             } ${
               isNeo
                 ? isLight
@@ -190,7 +193,7 @@ export default function ThemeToggle() {
             <button
               onClick={() => setDesignMode("glass")}
               className={`w-7 h-7 flex items-center justify-center rounded-full transition-colors z-10 cursor-pointer ${
-                !isNeo ? "text-indigo-500 dark:text-indigo-400" : "text-zinc-500 hover:text-zinc-300"
+                !isNeo ? "text-indigo-600 dark:text-indigo-400" : "text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
               }`}
               aria-label="Estilo Glassmorphism"
               title="Estilo Glassmorphism"
@@ -202,7 +205,7 @@ export default function ThemeToggle() {
             <button
               onClick={() => setDesignMode("neo")}
               className={`w-7 h-7 flex items-center justify-center rounded-full transition-colors z-10 cursor-pointer ${
-                isNeo ? "text-indigo-500 dark:text-indigo-400" : "text-zinc-500 hover:text-zinc-300"
+                isNeo ? "text-indigo-600 dark:text-indigo-400" : "text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
               }`}
               aria-label="Estilo Neomorphism"
               title="Estilo Neomorphism"
@@ -210,6 +213,17 @@ export default function ThemeToggle() {
               <Cube size={15} weight={isNeo ? "fill" : "regular"} />
             </button>
           </div>
+        </div>
+
+        {/* SECTION 3: ADMIN ACCESS */}
+        <div className="pt-2 border-t border-zinc-200 dark:border-zinc-800 w-full flex flex-col items-center">
+          <Link
+            href="/admin"
+            className="w-7 h-7 rounded-full flex items-center justify-center text-zinc-400 hover:text-blue-500 hover:bg-blue-500/10 transition-colors"
+            title="Panel de Administración Privado"
+          >
+            <ShieldCheck size={16} />
+          </Link>
         </div>
       </div>
 
@@ -231,7 +245,7 @@ export default function ThemeToggle() {
         title={isOpen ? "Cerrar panel" : "Abrir tema y estilo"}
       >
         {isOpen ? (
-          <CaretLeft size={16} weight="bold" className="text-zinc-400 hover:text-zinc-200 transition-colors" />
+          <CaretLeft size={16} weight="bold" className="text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200 transition-colors" />
         ) : (
           <>
             <span className="text-blue-500 text-[11px]">
@@ -240,7 +254,7 @@ export default function ThemeToggle() {
             <span className="text-indigo-400 text-[11px]">
               {isNeo ? <Cube size={12} weight="fill" /> : <Sparkle size={12} weight="fill" />}
             </span>
-            <CaretRight size={11} className="text-zinc-500 mt-1" />
+            <CaretRight size={11} className="text-zinc-400 dark:text-zinc-500 mt-1" />
           </>
         )}
       </button>

@@ -67,7 +67,7 @@ export default function TechStack() {
   ];
 
   return (
-    <section id="tech-stack" className="relative overflow-hidden py-24 px-6 bg-transparent border-t border-zinc-900/50 font-sans">
+    <section id="tech-stack" className="relative overflow-hidden py-24 px-6 bg-transparent border-t border-zinc-200 dark:border-zinc-900/50 font-sans">
       {/* Ambient glass glowing decorations */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-blue-500/[0.012] rounded-full blur-3xl pointer-events-none" />
 
@@ -79,7 +79,7 @@ export default function TechStack() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.3 }}
             transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-            className="text-2xl md:text-3xl font-medium tracking-tight text-white mb-3"
+            className="text-2xl md:text-3xl font-medium tracking-tight text-zinc-900 dark:text-white mb-3"
           >
             {t.techStack.title[language]}
           </motion.h2>
@@ -88,7 +88,7 @@ export default function TechStack() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.3 }}
             transition={{ duration: 0.5, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-            className="text-zinc-455 text-sm leading-relaxed max-w-[60ch]"
+            className="text-zinc-600 dark:text-zinc-400 text-sm leading-relaxed max-w-[60ch]"
           >
             {t.techStack.subtitle[language]}
           </motion.p>
@@ -109,21 +109,21 @@ export default function TechStack() {
               }}
               className="glass-card p-6 rounded-2xl flex flex-col gap-5 hover:scale-[1.005]"
             >
-              <h3 className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 border-b border-white/[0.03] pb-2">
+              <h3 className="text-[10px] font-mono uppercase tracking-widest text-zinc-500 dark:text-zinc-400 border-b border-zinc-200 dark:border-white/[0.04] pb-2 font-semibold">
                 {category.title}
               </h3>
               <div className="flex flex-col gap-2.5">
                 {category.items.map((item) => (
                   <div
                     key={item.name}
-                    className="flex items-center gap-3 p-3 rounded-xl border border-white/[0.02] bg-zinc-950/20 hover:border-accent/20 transition-all duration-300"
+                    className="flex items-center gap-3 p-3 rounded-xl border border-zinc-200/80 dark:border-white/[0.04] bg-white/70 dark:bg-zinc-950/40 hover:border-blue-500/40 hover:bg-zinc-50 dark:hover:bg-zinc-900/40 transition-all duration-300 shadow-2xs"
                   >
-                    <div className="text-accent shrink-0">
+                    <div className="text-blue-600 dark:text-accent shrink-0">
                       {item.icon}
                     </div>
                     <div className="flex flex-col gap-0.5">
-                      <span className="text-xs font-semibold text-zinc-200">{item.name}</span>
-                      <span className="text-[9px] text-zinc-550 font-mono tracking-wider uppercase">
+                      <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-200">{item.name}</span>
+                      <span className="text-[9px] text-zinc-500 dark:text-zinc-400 font-mono tracking-wider uppercase font-medium">
                         {item.level}
                       </span>
                     </div>
@@ -137,4 +137,3 @@ export default function TechStack() {
     </section>
   );
 }
-
