@@ -342,16 +342,34 @@ export function PromptingIsAllYouNeed({
         startY += wordIndex === 0 ? largeTextHeight + spaceBetweenLines : 0
       })
 
-      // Initialize ball position near the top right corner
-      const ballStartX = canvas.width * 0.9
-      const ballStartY = canvas.height * 0.1
+      // Initialize or preserve ball position & normalize speed across language changes
+      const prevBall = ballRef.current;
+      const isValidBall =
+        prevBall &&
+        prevBall.x > 0 &&
+        prevBall.y > 0 &&
+        prevBall.x < canvas.width &&
+        prevBall.y < canvas.height;
 
-      ballRef.current = {
-        x: ballStartX,
-        y: ballStartY,
-        dx: -BALL_SPEED,
-        dy: BALL_SPEED,
-        radius: Math.max(adjustedLargePixelSize / 2, 7),
+      if (isValidBall) {
+        const dirX = prevBall.dx >= 0 ? 1 : -1;
+        const dirY = prevBall.dy >= 0 ? 1 : -1;
+        ballRef.current = {
+          ...prevBall,
+          dx: dirX * BALL_SPEED,
+          dy: dirY * BALL_SPEED,
+          radius: Math.max(adjustedLargePixelSize / 2, 7),
+        };
+      } else {
+        const ballStartX = canvas.width * 0.9;
+        const ballStartY = canvas.height * 0.1;
+        ballRef.current = {
+          x: ballStartX,
+          y: ballStartY,
+          dx: -BALL_SPEED,
+          dy: BALL_SPEED,
+          radius: Math.max(adjustedLargePixelSize / 2, 7),
+        };
       }
 
       const paddleWidth = adjustedLargePixelSize
@@ -496,44 +514,52 @@ export function PromptingIsAllYouNeed({
       })
     }
 
+    let animationFrameId: number | null = null;
+    let isRunning = true;
+
     const gameLoop = () => {
-      updateGame()
-      drawGame()
-      requestAnimationFrame(gameLoop)
-    }
+      if (!isRunning) return;
+      updateGame();
+      drawGame();
+      animationFrameId = requestAnimationFrame(gameLoop);
+    };
 
     const handleMouseMove = (e: MouseEvent) => {
-      const rect = canvas.getBoundingClientRect()
-      mouseXRef.current = e.clientX - rect.left
-      lastMouseMoveTimeRef.current = Date.now()
-    }
+      const rect = canvas.getBoundingClientRect();
+      mouseXRef.current = e.clientX - rect.left;
+      lastMouseMoveTimeRef.current = Date.now();
+    };
 
     const handleTouchMove = (e: TouchEvent) => {
       if (e.touches.length > 0) {
-        const rect = canvas.getBoundingClientRect()
-        mouseXRef.current = e.touches[0].clientX - rect.left
-        lastMouseMoveTimeRef.current = Date.now()
+        const rect = canvas.getBoundingClientRect();
+        mouseXRef.current = e.touches[0].clientX - rect.left;
+        lastMouseMoveTimeRef.current = Date.now();
       }
-    }
+    };
 
     const handleMouseLeave = () => {
-      mouseXRef.current = null
-    }
+      mouseXRef.current = null;
+    };
 
-    canvas.addEventListener("mousemove", handleMouseMove)
-    canvas.addEventListener("touchmove", handleTouchMove)
-    canvas.addEventListener("mouseleave", handleMouseLeave)
+    canvas.addEventListener("mousemove", handleMouseMove);
+    canvas.addEventListener("touchmove", handleTouchMove);
+    canvas.addEventListener("mouseleave", handleMouseLeave);
 
-    resizeCanvas()
-    window.addEventListener("resize", resizeCanvas)
-    gameLoop()
+    resizeCanvas();
+    window.addEventListener("resize", resizeCanvas);
+    animationFrameId = requestAnimationFrame(gameLoop);
 
     return () => {
-      window.removeEventListener("resize", resizeCanvas)
-      canvas.removeEventListener("mousemove", handleMouseMove)
-      canvas.removeEventListener("touchmove", handleTouchMove)
-      canvas.removeEventListener("mouseleave", handleMouseLeave)
-    }
+      isRunning = false;
+      if (animationFrameId !== null) {
+        cancelAnimationFrame(animationFrameId);
+      }
+      window.removeEventListener("resize", resizeCanvas);
+      canvas.removeEventListener("mousemove", handleMouseMove);
+      canvas.removeEventListener("touchmove", handleTouchMove);
+      canvas.removeEventListener("mouseleave", handleMouseLeave);
+    };
   }, [firstLine, secondLine])
 
   return (
