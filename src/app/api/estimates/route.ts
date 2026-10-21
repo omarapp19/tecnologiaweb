@@ -7,11 +7,11 @@ export async function GET(request: Request) {
     const latestOnly = searchParams.get("latest") === "true";
 
     if (latestOnly) {
-      const latest = getLatestEstimate();
+      const latest = await getLatestEstimate();
       return NextResponse.json({ success: true, data: latest });
     }
 
-    const estimates = getEstimates(20);
+    const estimates = await getEstimates(20);
     return NextResponse.json({ success: true, data: estimates });
   } catch (error) {
     console.error("Error retrieving estimates:", error);
@@ -42,7 +42,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const record = saveEstimate({
+    const record = await saveEstimate({
       project_type,
       total_hours,
       estimated_days,
@@ -77,7 +77,7 @@ export async function DELETE(request: Request) {
       );
     }
 
-    const deleted = deleteEstimate(id);
+    const deleted = await deleteEstimate(id);
     return NextResponse.json({ success: deleted });
   } catch (error) {
     console.error("Error deleting estimate:", error);

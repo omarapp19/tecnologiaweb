@@ -53,6 +53,7 @@ interface SavedEstimate {
 }
 
 interface AdminStats {
+  engine?: "firebase" | "sqlite";
   totalContacts: number;
   unreadContacts: number;
   hotLeads: number;
@@ -470,8 +471,12 @@ export default function AdminDashboardPage() {
             <div>
               <h1 className="text-xs sm:text-sm font-bold tracking-tight text-white flex items-center gap-2">
                 NexusWeb Backoffice
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hidden md:inline-flex items-center gap-1">
-                  <Database size={10} /> SQLite WAL Activo
+                <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full border hidden md:inline-flex items-center gap-1 ${
+                  stats?.engine === "firebase"
+                    ? "bg-amber-500/10 text-amber-400 border-amber-500/30"
+                    : "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                }`}>
+                  <Database size={10} /> {stats?.engine === "firebase" ? "Firebase Firestore Cloud" : "SQLite Local"}
                 </span>
               </h1>
             </div>
@@ -1064,6 +1069,28 @@ export default function AdminDashboardPage() {
                   Descargar {contacts.length} Prospectos en CSV
                 </button>
               </div>
+            </div>
+
+            {/* Cloud Storage Status Card */}
+            <div className="p-6 rounded-2xl border border-zinc-800 bg-zinc-900/60 backdrop-blur-sm space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-xs font-mono font-bold text-white">
+                  <Database size={16} className="text-amber-400" />
+                  <span>Motor de Base de Datos: {stats?.engine === "firebase" ? "Firebase Cloud Firestore" : "SQLite Local"}</span>
+                </div>
+                <span className={`text-[10px] font-mono px-2.5 py-0.5 rounded-full border ${
+                  stats?.engine === "firebase"
+                    ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
+                    : "bg-blue-500/10 text-blue-400 border-blue-500/30"
+                }`}>
+                  {stats?.engine === "firebase" ? "Nube Activa (Persistente)" : "Modo Local (data/nexus.db)"}
+                </span>
+              </div>
+              <p className="text-xs text-zinc-400 leading-relaxed">
+                {stats?.engine === "firebase"
+                  ? "Tus datos se sincronizan directamente con Firebase Cloud Firestore. Los clientes que envíen el formulario en Vercel aparecerán aquí de forma inmediata y permanente."
+                  : "Actualmente estás usando el motor local SQLite. Para que los prospectos enviados en Vercel se guarden de forma permanente en la nube, solo agrega tus claves de Firebase en Vercel -> Settings -> Environment Variables."}
+              </p>
             </div>
 
             {/* Demand Distribution breakdown */}

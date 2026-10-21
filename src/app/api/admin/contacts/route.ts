@@ -15,7 +15,7 @@ export async function GET(request: Request) {
     const query = searchParams.get("query") || "";
     const limit = parseInt(searchParams.get("limit") || "100", 10);
 
-    const contacts = getFilteredContacts({ status, tier, query, limit });
+    const contacts = await getFilteredContacts({ status, tier, query, limit });
     return NextResponse.json({ success: true, data: contacts });
   } catch (error) {
     console.error("Error retrieving admin contacts:", error);
@@ -38,9 +38,9 @@ export async function PATCH(request: Request) {
     }
 
     if (status !== undefined) {
-      updateContactStatus(id, status, notes);
+      await updateContactStatus(id, status, notes);
     } else if (notes !== undefined) {
-      updateContactNotes(id, notes);
+      await updateContactNotes(id, notes);
     }
 
     return NextResponse.json({ success: true, message: "Contacto actualizado exitosamente." });
@@ -64,7 +64,7 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: "ID de contacto requerido." }, { status: 400 });
     }
 
-    const deleted = deleteContact(id);
+    const deleted = await deleteContact(id);
     return NextResponse.json({ success: deleted });
   } catch (error) {
     console.error("Error deleting contact:", error);

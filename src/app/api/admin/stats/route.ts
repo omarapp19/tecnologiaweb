@@ -9,7 +9,7 @@ export async function GET() {
   }
 
   try {
-    const stats = getAdminStats();
+    const stats = await getAdminStats();
     return NextResponse.json({ success: true, stats });
   } catch (error) {
     console.error("Error retrieving admin stats:", error);

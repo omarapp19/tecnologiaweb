@@ -5,7 +5,7 @@ import { evaluateLead } from "@/lib/leadScorer";
 
 export async function GET() {
   try {
-    const contacts = getContacts(50);
+    const contacts = await getContacts(50);
     return NextResponse.json({ success: true, data: contacts });
   } catch (error) {
     console.error("Error retrieving contacts from database:", error);
@@ -36,10 +36,10 @@ export async function POST(request: Request) {
       phone: phone ? String(phone).trim() : undefined,
     });
 
-    // 2. Save directly into SQLite Database with qualification metrics
+    // 2. Save directly into Database with qualification metrics
     let savedRecord = null;
     try {
-      savedRecord = saveContact({
+      savedRecord = await saveContact({
         name: name.trim(),
         email: email.trim(),
         message: message.trim(),
@@ -160,7 +160,7 @@ export async function DELETE(request: Request) {
       );
     }
 
-    const deleted = deleteContact(id);
+    const deleted = await deleteContact(id);
     return NextResponse.json({ success: deleted });
   } catch (error) {
     console.error("Error deleting contact record:", error);
