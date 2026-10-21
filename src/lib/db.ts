@@ -171,9 +171,13 @@ export async function saveContact(data: {
   if (isFirebaseConfigured()) {
     const firestore = getDbFirestore();
     if (firestore) {
-      const docRef = doc(firestore, "contacts", id);
-      await setDoc(docRef, record);
-      return record;
+      try {
+        const docRef = doc(firestore, "contacts", id);
+        await setDoc(docRef, record);
+        return record;
+      } catch (err) {
+        console.warn("Firestore save notice, falling back to SQLite:", err);
+      }
     }
   }
 
