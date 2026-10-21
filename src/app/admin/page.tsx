@@ -354,16 +354,13 @@ export default function AdminDashboardPage() {
           transition={{ duration: 0.3 }}
           className="relative z-10 w-full max-w-md p-8 rounded-2xl border border-zinc-800 bg-zinc-900/90 backdrop-blur-xl shadow-2xl shadow-blue-500/5"
         >
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-start mb-6">
             <Link
               href="/"
               className="inline-flex items-center gap-1.5 text-xs text-zinc-400 hover:text-zinc-200 transition-colors"
             >
               <ArrowLeft size={14} /> Volver a la web
             </Link>
-            <span className="flex items-center gap-1 text-[10px] font-mono px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">
-              <Database size={10} /> SQLite WAL
-            </span>
           </div>
 
           <div className="text-center space-y-2 mb-8">
