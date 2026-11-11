@@ -205,20 +205,22 @@ export default function ProjectEstimator() {
     };
   }, [projectType, deliveryMode, modules, customFeatures, budgetTier, currency]);
 
-  // Fetch Database Estimates History
+  // Fetch Database Estimates History (Asynchronous GET + try/catch/finally)
   const fetchDbHistory = useCallback(async () => {
     setLoadingHistory(true);
     try {
       const res = await fetch("/api/estimates");
-      if (res.ok) {
-        const json = await res.json();
-        if (Array.isArray(json.data)) {
-          setSavedDbEstimates(json.data);
-        }
+      if (!res.ok) {
+        throw new Error(`Error HTTP ${res.status}: ${res.statusText}`);
+      }
+      const json = await res.json();
+      if (Array.isArray(json.data)) {
+        setSavedDbEstimates(json.data);
       }
     } catch (err) {
       console.warn("Could not fetch database estimates", err);
     } finally {
+      // finally always hides the loader indicator
       setLoadingHistory(false);
     }
   }, []);
@@ -307,6 +309,7 @@ export default function ProjectEstimator() {
   }, [projectType, calculatedStats, modules, deliveryMode, budgetTier, currency, customFeatures]);
 
   // SAVE TO DATABASE
+  // ASYNC SPECIFICATION SAVING (POST + Headers + JSON.stringify + response.ok + try/catch/finally)
   const handleSaveToDatabase = async () => {
     setIsSavingDb(true);
     const payload = getSpecificationPayload();
@@ -318,36 +321,41 @@ export default function ProjectEstimator() {
         body: JSON.stringify(payload),
       });
 
+      // Verify response.ok since fetch won't reject on 4xx/5xx status codes
+      if (!res.ok) {
+        let errorDetail = `Error HTTP ${res.status}: ${res.statusText}`;
+        try {
+          const errData = await res.json();
+          if (errData?.error) errorDetail = errData.error;
+        } catch {}
+        throw new Error(errorDetail);
+      }
+
+      const resData = await res.json();
       localStorage.setItem("nexus_saved_estimate", JSON.stringify(payload));
 
-      if (res.ok) {
-        setFeedback({
-          type: "success",
-          message:
-            language === "es"
-              ? "¡Cotización guardada exitosamente en la base de datos SQLite!"
-              : "Estimate successfully saved to the SQLite database!",
-        });
-        fetchDbHistory();
-      } else {
-        setFeedback({
-          type: "success",
-          message:
-            language === "es"
-              ? "Cotización guardada en el almacenamiento local."
-              : "Estimate saved to local browser storage.",
-        });
-      }
-    } catch {
+      setFeedback({
+        type: "success",
+        message:
+          resData.message ||
+          (language === "es"
+            ? "¡Cotización guardada exitosamente en la base de datos!"
+            : "Estimate successfully saved to the database!"),
+      });
+      fetchDbHistory();
+    } catch (err: unknown) {
+      // Local fallback in case of network or server failure
       localStorage.setItem("nexus_saved_estimate", JSON.stringify(payload));
+      const errMsg = err instanceof Error ? err.message : "";
       setFeedback({
         type: "success",
         message:
           language === "es"
-            ? "Cotización respaldada en almacenamiento local."
-            : "Estimate backed up to local storage.",
+            ? `Cotización respaldada en almacenamiento local (${errMsg || "modo offline"}).`
+            : `Estimate backed up to local storage (${errMsg || "offline mode"}).`,
       });
     } finally {
+      // finally block ALWAYS executes to turn off spinner
       setIsSavingDb(false);
     }
   };
@@ -449,17 +457,25 @@ export default function ProjectEstimator() {
     });
   };
 
-  // DELETE ESTIMATE FROM DATABASE
+  // DELETE ESTIMATE FROM DATABASE (Async DELETE + try/catch/finally)
   const handleDeleteDbEstimate = async (id: string) => {
     try {
-      await fetch(`/api/estimates?id=${encodeURIComponent(id)}`, { method: "DELETE" });
+      const res = await fetch(`/api/estimates?id=${encodeURIComponent(id)}`, { method: "DELETE" });
+      if (!res.ok) {
+        throw new Error(`Error HTTP ${res.status}`);
+      }
       setSavedDbEstimates((prev) => prev.filter((item) => item.id !== id));
       setFeedback({
         type: "success",
         message: language === "es" ? "Registro eliminado de la base de datos." : "Record deleted from database.",
       });
-    } catch (e) {
+    } catch (e: unknown) {
       console.error("Error deleting estimate from DB", e);
+      const errMsg = e instanceof Error ? e.message : "Error al procesar eliminación";
+      setFeedback({
+        type: "error",
+        message: language === "es" ? `No se pudo eliminar el registro (${errMsg}).` : `Could not delete record (${errMsg}).`,
+      });
     }
   };
 

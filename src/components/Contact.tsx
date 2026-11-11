@@ -7,6 +7,8 @@ import {
   GithubLogo,
   CheckCircle,
   Warning,
+  CircleNotch,
+  X,
 } from "@phosphor-icons/react";
 import { useLanguage } from "@/context/LanguageContext";
 
@@ -19,7 +21,13 @@ export default function Contact() {
     message: "",
   });
 
-  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  // ASYNC STATE: Tracks ongoing asynchronous HTTP operations & feedback messages
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [feedback, setFeedback] = useState<{
+    type: "ok" | "error";
+    message: string;
+    statusCode?: number;
+  } | null>(null);
   const [errors, setErrors] = useState<{ name?: string; email?: string; message?: string }>({});
 
   // Declarative Validation Engine
@@ -83,7 +91,9 @@ export default function Contact() {
     }
   };
 
-  // FORM SUBMISSION (Saves to SQLite DB via API + Local Storage fallback)
+  // =========================================================================
+  // ASYNCHRONOUS SUBMISSION PATTERN (Fetch API, Headers, JSON, response.ok, try/catch/finally)
+  // =========================================================================
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -91,9 +101,13 @@ export default function Contact() {
       return;
     }
 
-    setStatus("loading");
+    // 1. Mostrar Spinner y limpiar notificaciones previas
+    setIsSubmitting(true);
+    setFeedback(null);
 
+    // 2. Bloque try / catch / finally para comunicación asíncrona robusta
     try {
+      // POST con Headers ('Content-Type': 'application/json') y Body serializado con JSON.stringify
       const response = await fetch("/api/contact", {
         method: "POST",
         headers: {
@@ -102,14 +116,50 @@ export default function Contact() {
         body: JSON.stringify(formData),
       });
 
-      if (response.ok) {
-        setStatus("success");
-        setFormData({ name: "", email: "", phone: "", message: "" });
-      } else {
-        setStatus("error");
+      // Validar response.ok (fetch NO lanza excepción automática ante errores 400, 404 ni 500)
+      if (!response.ok) {
+        let errorDetail = `Error HTTP ${response.status}: ${response.statusText || "Respuesta no exitosa"}`;
+        try {
+          const errorJson = await response.json();
+          if (errorJson && errorJson.error) {
+            errorDetail = errorJson.error;
+          }
+        } catch {
+          // Si el servidor no devolvió JSON, mantenemos el statusText
+        }
+        throw new Error(errorDetail);
       }
-    } catch {
-      setStatus("error");
+
+      // Procesar respuesta JSON si la petición fue satisfactoria
+      const result = await response.json();
+      setFeedback({
+        type: "ok",
+        message:
+          result.message ||
+          (language === "es"
+            ? "¡Tu mensaje ha sido enviado y registrado con éxito!"
+            : "Your message has been successfully submitted and stored!"),
+        statusCode: response.status,
+      });
+
+      // Limpiar formulario tras confirmación exitosa
+      setFormData({ name: "", email: "", phone: "", message: "" });
+    } catch (error: unknown) {
+      // Atrapar caídas de red físicas, DNS o excepciones lanzadas por status !response.ok
+      const message =
+        error instanceof Error
+          ? error.message
+          : language === "es"
+          ? "Error de conexión con el servidor. Verifica tu acceso a internet."
+          : "Network connection error with the server. Please check your connection.";
+
+      setFeedback({
+        type: "error",
+        message,
+      });
+    } finally {
+      // FINALLY: Se ejecuta SIEMPRE para ocultar el spinner y reactivar los controles
+      setIsSubmitting(false);
     }
   };
 
@@ -149,7 +199,7 @@ export default function Contact() {
                   name="name"
                   value={formData.name}
                   onChange={handleChange}
-                  disabled={status === "loading"}
+                  disabled={isSubmitting}
                   aria-invalid={!!errors.name}
                   aria-describedby={errors.name ? "name-error" : undefined}
                   className={`w-full py-2.5 px-1 bg-transparent border-b text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-600 transition-colors focus:outline-none rounded-none ${
@@ -181,7 +231,7 @@ export default function Contact() {
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  disabled={status === "loading"}
+                  disabled={isSubmitting}
                   aria-invalid={!!errors.email}
                   aria-describedby={errors.email ? "email-error" : undefined}
                   className={`w-full py-2.5 px-1 bg-transparent border-b text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-600 transition-colors focus:outline-none rounded-none ${
@@ -213,7 +263,7 @@ export default function Contact() {
                   name="phone"
                   value={formData.phone}
                   onChange={handleChange}
-                  disabled={status === "loading"}
+                  disabled={isSubmitting}
                   className="w-full py-2.5 px-1 bg-transparent border-b text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-600 transition-colors focus:outline-none rounded-none border-zinc-300 dark:border-zinc-800 focus:border-blue-500 font-mono"
                   placeholder="+1 555 123 4567"
                 />
@@ -233,7 +283,7 @@ export default function Contact() {
                   rows={4}
                   value={formData.message}
                   onChange={handleChange}
-                  disabled={status === "loading"}
+                  disabled={isSubmitting}
                   aria-invalid={!!errors.message}
                   aria-describedby={errors.message ? "message-error" : undefined}
                   className={`w-full py-2.5 px-1 bg-transparent border-b text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-600 transition-colors focus:outline-none rounded-none resize-none ${
@@ -251,31 +301,57 @@ export default function Contact() {
                 )}
               </div>
 
-              {/* Success & Error Messages */}
-              {status === "success" && (
-                <div className="p-4 bg-emerald-500/10 border border-emerald-500/30 text-xs text-emerald-700 dark:text-emerald-400 rounded-lg flex items-center gap-2">
-                  <CheckCircle size={16} weight="fill" className="shrink-0" />
-                  <span className="font-medium">
-                    {t.contact.status.success[language]} &mdash; Guardado en base de datos SQLite.
-                  </span>
+              {/* Asynchronous Feedback Alerts (Verde = Éxito / Rojo = Error HTTP/Red) */}
+              {feedback && (
+                <div
+                  role="alert"
+                  className={`p-4 rounded-xl border flex items-start justify-between gap-3 text-xs transition-all shadow-sm ${
+                    feedback.type === "ok"
+                      ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-800 dark:text-emerald-300"
+                      : "bg-rose-500/10 border-rose-500/30 text-rose-800 dark:text-rose-300"
+                  }`}
+                >
+                  <div className="flex items-start gap-2.5">
+                    {feedback.type === "ok" ? (
+                      <CheckCircle size={18} weight="fill" className="text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+                    ) : (
+                      <Warning size={18} weight="fill" className="text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />
+                    )}
+                    <div className="space-y-0.5">
+                      <p className="font-semibold leading-snug">{feedback.message}</p>
+                      {feedback.statusCode && (
+                        <p className="text-[10px] font-mono opacity-80">
+                          Código HTTP: {feedback.statusCode} OK &bull; Asincronía completada
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setFeedback(null)}
+                    className="p-1 rounded hover:bg-black/10 dark:hover:bg-white/10 transition-colors text-zinc-500 dark:text-zinc-400 cursor-pointer"
+                    title="Cerrar notificación"
+                  >
+                    <X size={14} />
+                  </button>
                 </div>
               )}
 
-              {status === "error" && (
-                <div className="p-4 bg-rose-500/10 border border-rose-500/30 text-xs text-rose-700 dark:text-rose-400 rounded-lg flex items-center gap-2">
-                  <Warning size={16} weight="fill" className="shrink-0" />
-                  <span className="font-medium">{t.contact.status.error[language]}</span>
-                </div>
-              )}
-
-              {/* Submit button & Inquiries toggle */}
+              {/* Asynchronous Submit Action with Spinner */}
               <div className="flex items-center justify-between pt-2">
                 <button
                   type="submit"
-                  disabled={status === "loading"}
-                  className="tap-feedback inline-flex items-center justify-center px-6 py-2.5 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-md"
+                  disabled={isSubmitting}
+                  className="tap-feedback inline-flex items-center justify-center gap-2 px-6 py-2.5 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-md transition-all disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer shadow-md"
                 >
-                  {status === "loading" ? t.contact.status.loading[language] : t.contact.status.submit[language]}
+                  {isSubmitting ? (
+                    <>
+                      <CircleNotch size={14} className="animate-spin" />
+                      <span>{language === "es" ? "Enviando solicitud asíncrona..." : "Sending async request..."}</span>
+                    </>
+                  ) : (
+                    <span>{t.contact.status.submit[language]}</span>
+                  )}
                 </button>
               </div>
             </form>

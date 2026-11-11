@@ -199,7 +199,7 @@ export default function AdminDashboardPage() {
     }
   };
 
-  // Update Contact Status
+  // Update Contact Status (Async PATCH + Headers + response.ok + try/catch/finally)
   const handleStatusChange = async (contactId: string, newStatus: string) => {
     try {
       const res = await fetch("/api/admin/contacts", {
@@ -208,24 +208,28 @@ export default function AdminDashboardPage() {
         body: JSON.stringify({ id: contactId, status: newStatus }),
       });
 
-      if (res.ok) {
-        setContacts((prev) =>
-          prev.map((c) => (c.id === contactId ? { ...c, status: newStatus } : c))
-        );
-        setActionFeedback(`Estado actualizado a: ${newStatus}`);
-        // Refresh stats in background
-        const statsRes = await fetch("/api/admin/stats");
-        if (statsRes.ok) {
-          const statsJson = await statsRes.json();
-          if (statsJson.stats) setStats(statsJson.stats);
-        }
+      if (!res.ok) {
+        throw new Error(`Error HTTP ${res.status}: ${res.statusText}`);
       }
-    } catch {
-      setActionFeedback("Error al actualizar el estado.");
+
+      setContacts((prev) =>
+        prev.map((c) => (c.id === contactId ? { ...c, status: newStatus } : c))
+      );
+      setActionFeedback(`Estado actualizado a: ${newStatus}`);
+
+      // Refresh stats in background
+      const statsRes = await fetch("/api/admin/stats");
+      if (statsRes.ok) {
+        const statsJson = await statsRes.json();
+        if (statsJson.stats) setStats(statsJson.stats);
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Error al actualizar el estado.";
+      setActionFeedback(`Fallo: ${msg}`);
     }
   };
 
-  // Save Contact Note
+  // Save Contact Note (Async PATCH + Headers + response.ok + try/catch/finally)
   const handleSaveNote = async (contactId: string) => {
     try {
       const res = await fetch("/api/admin/contacts", {
@@ -234,20 +238,23 @@ export default function AdminDashboardPage() {
         body: JSON.stringify({ id: contactId, notes: noteDraft }),
       });
 
-      if (res.ok) {
-        setContacts((prev) =>
-          prev.map((c) => (c.id === contactId ? { ...c, admin_notes: noteDraft } : c))
-        );
-        setEditingNotesId(null);
-        setNoteDraft("");
-        setActionFeedback("Nota interna guardada.");
+      if (!res.ok) {
+        throw new Error(`Error HTTP ${res.status}: ${res.statusText}`);
       }
-    } catch {
-      setActionFeedback("Error al guardar la nota.");
+
+      setContacts((prev) =>
+        prev.map((c) => (c.id === contactId ? { ...c, admin_notes: noteDraft } : c))
+      );
+      setEditingNotesId(null);
+      setNoteDraft("");
+      setActionFeedback("Nota interna guardada con éxito.");
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Error al guardar la nota.";
+      setActionFeedback(`Fallo: ${msg}`);
     }
   };
 
-  // Delete Contact
+  // Delete Contact (Async DELETE + response.ok + try/catch/finally)
   const handleDeleteContact = async (contactId: string) => {
     if (!window.confirm("¿Seguro que deseas eliminar este prospecto de la base de datos?")) {
       return;
@@ -258,12 +265,15 @@ export default function AdminDashboardPage() {
         method: "DELETE",
       });
 
-      if (res.ok) {
-        setContacts((prev) => prev.filter((c) => c.id !== contactId));
-        setActionFeedback("Prospecto eliminado de la base de datos.");
+      if (!res.ok) {
+        throw new Error(`Error HTTP ${res.status}: ${res.statusText}`);
       }
-    } catch {
-      setActionFeedback("Error al eliminar el prospecto.");
+
+      setContacts((prev) => prev.filter((c) => c.id !== contactId));
+      setActionFeedback("Prospecto eliminado de la base de datos.");
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Error al eliminar el prospecto.";
+      setActionFeedback(`Fallo: ${msg}`);
     }
   };
 
