@@ -7,6 +7,7 @@ import TechStack from "@/components/TechStack";
 import Team from "@/components/Team";
 import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
+import Chatbot from "@/components/Chatbot";
 import BackgroundNebulae from "@/components/ui/BackgroundNebulae";
 
 export default function Home() {
@@ -44,6 +45,9 @@ export default function Home() {
 
       {/* Footer Details */}
       <Footer />
+
+      {/* Floating assistant */}
+      <Chatbot />
     </>
   );
 }
