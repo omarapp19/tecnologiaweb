@@ -20,8 +20,8 @@ interface Rule {
 const RULES: Rule[] = [
   {
     keys: ["precio", "costo", "cuanto", "cuánto", "presupuesto", "cotiz", "price", "cost", "budget", "quote", "estimate"],
-    es: "Puedes calcular horas, plazo e inversión estimada con nuestro cotizador interactivo. Además, una regresión lineal con proyectos guardados predice el plazo.",
-    en: "You can compute hours, timeline and budget with our interactive estimator. A linear regression over saved projects also predicts the timeline.",
+    es: "Puedes calcular horas, plazo e inversión estimada con nuestro cotizador interactivo.",
+    en: "You can compute hours, timeline and budget with our interactive estimator.",
     section: { id: "cotizador", es: "Ir al cotizador", en: "Go to estimator" },
   },
   {
@@ -142,7 +142,7 @@ export default function Chatbot() {
   const all = [greeting, ...messages];
 
   return (
-    <div className="fixed bottom-5 right-5 z-50 font-sans">
+    <div className="fixed bottom-5 left-5 z-50 font-sans">
       {open && (
         <div
           role="dialog"
@@ -203,7 +203,7 @@ export default function Chatbot() {
           </form>
         </div>
       )}
-      <div className="flex justify-end">
+      <div className="flex justify-start">
         <button
           onClick={() => setOpen((o) => !o)}
           aria-label={open ? "Close chat" : "Open chat"}

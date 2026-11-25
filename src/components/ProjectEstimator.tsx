@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useRef, useEffect, useMemo, useCallback } from "react";
-import { fitLinear, predict, type LinearModel } from "@/lib/regression";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Calculator,
@@ -51,37 +50,6 @@ interface SavedDbEstimate {
   raw_specification?: string;
   created_at: string;
   status: string;
-}
-
-function RegressionChart({
-  points,
-  model,
-  current,
-}: {
-  points: Array<{ x: number; y: number }>;
-  model: LinearModel;
-  current: { x: number; y: number };
-}) {
-  const W = 260, H = 110, P = 14;
-  const xs = [...points.map((p) => p.x), current.x];
-  const ys = [...points.map((p) => p.y), current.y];
-  const minX = Math.min(...xs), maxX = Math.max(...xs);
-  const minY = Math.min(...ys), maxY = Math.max(...ys);
-  const sx = (x: number) => P + ((x - minX) / (maxX - minX || 1)) * (W - 2 * P);
-  const sy = (y: number) => H - P - ((y - minY) / (maxY - minY || 1)) * (H - 2 * P);
-  return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto" role="img" aria-label="Regression chart">
-      <line
-        x1={sx(minX)} y1={sy(predict(model, minX))}
-        x2={sx(maxX)} y2={sy(predict(model, maxX))}
-        stroke="currentColor" strokeWidth="1.5" className="text-cyan-500"
-      />
-      {points.map((p, i) => (
-        <circle key={i} cx={sx(p.x)} cy={sy(p.y)} r="3" className="fill-blue-500/70" />
-      ))}
-      <circle cx={sx(current.x)} cy={sy(current.y)} r="5" className="fill-none stroke-amber-500" strokeWidth="2" />
-    </svg>
-  );
 }
 
 const baseHoursMap: Record<"web" | "pwa" | "cloud" | "custom", number> = {
@@ -236,18 +204,6 @@ export default function ProjectEstimator() {
       },
     };
   }, [projectType, deliveryMode, modules, customFeatures, budgetTier, currency]);
-
-  // Regresión lineal: días ~ horas, ajustada con las estimaciones guardadas
-  const regression = useMemo(() => {
-    const model = fitLinear(
-      savedDbEstimates.map((e) => ({ x: e.total_hours, y: e.estimated_days }))
-    );
-    if (!model) return null;
-    return {
-      model,
-      predictedDays: Math.max(1, Math.round(predict(model, calculatedStats.totalHours))),
-    };
-  }, [savedDbEstimates, calculatedStats.totalHours]);
 
   // Fetch Database Estimates History (Asynchronous GET + try/catch/finally)
   const fetchDbHistory = useCallback(async () => {
@@ -1014,41 +970,6 @@ Generado en: https://nexusweb.dev`;
                     ~{calculatedStats.estimatedDays}d
                   </span>
                 </div>
-              </div>
-
-              {/* Linear regression prediction */}
-              <div className="p-3 rounded-xl bg-zinc-100/70 dark:bg-zinc-900/50 border border-dashed border-zinc-300 dark:border-zinc-700 text-[11px] font-mono text-zinc-600 dark:text-zinc-400 space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="uppercase tracking-wider font-semibold text-zinc-500">
-                    {language === "es" ? "Regresión lineal" : "Linear regression"}
-                  </span>
-                  {regression && (
-                    <span>R² = {regression.model.r2.toFixed(3)} · n = {regression.model.n}</span>
-                  )}
-                </div>
-                {regression ? (
-                  <>
-                    <div>
-                      {language === "es" ? "Según proyectos guardados" : "Based on saved projects"}: ~
-                      <strong className="text-cyan-600 dark:text-cyan-400">{regression.predictedDays}d</strong>
-                    </div>
-                    <div className="text-zinc-500">
-                      {language === "es" ? "días" : "days"} = {regression.model.slope.toFixed(3)} · {language === "es" ? "horas" : "hours"}{" "}
-                      {regression.model.intercept < 0 ? "−" : "+"} {Math.abs(regression.model.intercept).toFixed(2)}
-                    </div>
-                    <RegressionChart
-                      points={savedDbEstimates.map((e) => ({ x: e.total_hours, y: e.estimated_days }))}
-                      model={regression.model}
-                      current={{ x: calculatedStats.totalHours, y: regression.predictedDays }}
-                    />
-                  </>
-                ) : (
-                  <div className="text-zinc-500">
-                    {language === "es"
-                      ? `Guarda al menos 3 estimaciones para activar la predicción (${savedDbEstimates.length}/3).`
-                      : `Save at least 3 estimates to enable the prediction (${savedDbEstimates.length}/3).`}
-                  </div>
-                )}
               </div>
 
               {/* Financial Range Card with Tier Selector */}
